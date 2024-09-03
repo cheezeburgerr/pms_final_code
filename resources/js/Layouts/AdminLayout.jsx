@@ -2,7 +2,7 @@ import { createContext, useContext, useState } from 'react';
 import { Link } from '@inertiajs/react';
 import Dropdown from '@/Components/Dropdown';
 import DarkModeToggle from '@/Components/DarkModeToggle';
-import { IconLayoutBoard, IconShirt, IconPackage, IconUserCancel, IconCheck, IconMenu, IconMenu2, IconBell, IconMessage2, IconUser, IconCoin } from '@tabler/icons-react';
+import { IconLayoutBoard, IconShirt, IconPackage, IconUserCancel, IconCheck, IconMenu, IconMenu2, IconBell, IconMessage2, IconUser, IconCoin, IconGraph } from '@tabler/icons-react';
 import { Button, Popover } from 'flowbite-react';
 import NotificationBox from '@/Components/Notification/NotificationBox';
 import SearchBox from '@/Components/SearchBar/SearchBox';
@@ -35,6 +35,7 @@ export default function Admin({ user, children }) {
                             <SidebarItem href={route('admin.teams')} active={route().current('admin.teams')} icon={<IconPackage />} text='Orders' />
                             <SidebarItem href={route('employees.index')} active={route().current('employees.index')} icon={<IconUser />} text='Employees' />
                             <SidebarItem href={route('sales')} active={route().current('sales')} icon={<IconCoin />} text='Sales' />
+                            <SidebarItem href={route('production')} active={route().current('production')} icon={<IconGraph />} text='Production' />
                             {user.dept_id === 2 && (
                                 <>
                                     <SidebarItem href={route('admin.pending')} active={route().current('admin.pending')} icon={<IconShirt />} text='New Orders' />

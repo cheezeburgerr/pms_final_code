@@ -18,7 +18,10 @@ class CheckingController extends Controller
             $query->where('status', 'Printing');
         })->get();
 
-        return Inertia::render('Employee/Checking', ['order' => $order]);
+        $all = Order::with('production.printer', 'lineups')->whereHas('production', function ($query) {
+            $query->whereNotIn('status', ['Pending']);})->get();
+
+        return Inertia::render('Employee/Checking', ['order' => $order, 'allOrders' => $all]);
     }
 
     public function show($id)

@@ -13,4 +13,8 @@ class ProductModel extends Model
         'product_id',
         'path'
     ];
+
+    public function designs(){
+        return $this->hasMany(ModelDesigns::class,'model_id');
+    }
 }

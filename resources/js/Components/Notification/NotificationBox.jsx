@@ -61,14 +61,17 @@ export default function NotificationBox({ className = '', user_id, ...props }) {
     return (
         <>
             <Popover content={
-                <div className="p-4 dark:bg-zinc-900 w-full h-[calc(100vh-300px)] overflow-y-auto">
+                <div className="p-4 dark:bg-zinc-900 w-80 h-[calc(100vh-300px)] overflow-y-auto">
                     <h1 className="font-bold text-xl mb-4">Notifications</h1>
                     <div className="flex flex-col gap-4">
                         {notifications.length > 0 ? notifications.map((notif, index) => (
                             <div className='cursor-pointer' key={index} onClick={() => handleNotificationClick(notif)}>
                                 <Notification title={notif.title} message={notif.message} status={notif.status} />
                             </div>
-                        )) : <div className="w-full h-full text-center"><Spinner /></div>}
+                        )) : <div className="w-full h-full text-center">
+                            {/* <Spinner /> */}
+                            <p>No notifications.</p>
+                            </div>}
                     </div>
                 </div>
             }>

@@ -14,7 +14,7 @@ class DesignerController extends Controller
     public function index ()
     {
 
-        $products = ProductModel::all();
+        $products = ProductModel::with('designs')->get();
         return Inertia::render('Designer/Designer', ['products' => $products]);
     }
 }

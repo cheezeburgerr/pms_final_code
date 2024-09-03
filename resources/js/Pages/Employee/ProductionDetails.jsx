@@ -11,6 +11,7 @@ import { getStatusColor } from '@/statusColors';
 import SendDesign from '@/Components/SendDesign';
 import SecondaryButton from '@/Components/SecondaryButton';
 import { IconPrinter, IconSendOff, IconUserShare } from '@tabler/icons-react';
+import BackButton from '@/Components/BackButton';
 
 const ApprovalWaiting = ({order}) => {
 
@@ -141,6 +142,7 @@ export default function ProductionDetails({ auth, boxes, order, printers }) {
             <Head title="Production Details" />
 
 
+            <BackButton/>
             <div className="flex justify-between">
             <h1 className='text-2xl font-bold mb-8 '>Production Details</h1>
             {order.production.status === 'Designing' && (

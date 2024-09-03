@@ -155,7 +155,7 @@ export default function Configurator({ auth, product }) {
 
 
     const svgFiles = [
-        '/logos/nike.svg',
+        '/logos/Logo_NIKE.svg',
         '/logos/adidas.svg',
         '/logos/puma.svg',
         // Add more SVG file paths as needed
@@ -397,12 +397,12 @@ export default function Configurator({ auth, product }) {
                         )} */}
                 </div>
 
-                <div className={`w-full lg:w-1/3 2xl:w-1/4 fixed right-0 lg:h-screen bottom-0 transition-all lg:top-10 bg-gray-100 dark:bg-zinc-900   ${showProperties ? 'h-[calc(100vh-500px)] translate-y-0' : 'translate-y-full lg:translate-y-0'} overflow-y-scroll no-scrollbar`}>
+                <div className={`lg:m-5 rounded-lg w-full lg:w-1/3 2xl:w-1/4 fixed right-0 lg:h-screen bottom-0 transition-all lg:top-10 bg-gray-100 dark:bg-zinc-900   ${showProperties ? 'h-[calc(100vh-500px)] translate-y-0' : 'translate-y-full lg:translate-y-0'} overflow-y-scroll no-scrollbar`}>
 
                     <div className="text-center">
                         <button onClick={() => setShowProperties(!showProperties)} className='p-1 cursor-pointer'><IconInfoCircle  size={32} className={`lg:hidden`} /></button>
                     </div>
-                    <div className={`w-screen lg:w-full rounded-none transition-all lg:h-full `}>
+                    <div className={`w-screen lg:w-full rounded-lg transition-all lg:h-full `}>
                         <div className="bg-gray-100 mb-4">
                             <Tabs aria-label="Full width tabs" style="fullWidth" className='dark:bg-zinc-900'>
                                 <Tabs.Item active title="Properties" className='dark:text-gray-100'>
@@ -436,8 +436,8 @@ export default function Configurator({ auth, product }) {
                                                     </div>
                                                 )}
                                                 <div style={{ marginTop: '20px' }}>
-                                                    <label htmlFor="strokeWidth">Stroke Width:</label>
-                                                    <input
+                                                    <InputLabel htmlFor="strokeWidth">Stroke Width:</InputLabel>
+                                                    <TextInput
                                                         type="number"
                                                         id="strokeWidth"
                                                         value={strokeWidth}
@@ -497,7 +497,7 @@ export default function Configurator({ auth, product }) {
                                     <div className="p-4">
                                         <div className='flex gap-2 w-full'>
                                             <TextInput type="text" id="text-input" className='w-full' placeholder="Enter text" />
-                                            <PrimaryButton id="add-text-btn" className='rounded-none w-1/4' onClick={() => DesignerFunctions.addText(canvas, setAddToModel)}>Add Text</PrimaryButton>
+                                            <PrimaryButton id="add-text-btn"  onClick={() => DesignerFunctions.addText(canvas, setAddToModel)}>Add</PrimaryButton>
                                         </div>
                                         <div className='p-4'>
                                             <p className="font-bold">Texts</p>
@@ -533,7 +533,7 @@ export default function Configurator({ auth, product }) {
                                         <PrimaryButton onClick={() => DesignerFunctions.addImage(canvas)}>Add</PrimaryButton>
                                         <div style={{ display: 'flex', flexWrap: 'wrap' }}>
                                             {svgFiles.map((svgUrl, index) => (
-                                                <div key={index} style={{ margin: '10px', cursor: 'pointer' }} onClick={() => DesignerFunctions.addSvgToCanvas(svgUrl, selectedColor, canvas)}>
+                                                <div className='rounded-lg dark:bg-zinc-800 p-2 cursor-pointer' key={index} style={{ margin: '10px', cursor: 'pointer' }} onClick={() => DesignerFunctions.addSvgToCanvas(svgUrl, selectedColor, canvas)}>
                                                     <img src={svgUrl} alt={`SVG ${index}`} style={{ width: '100px', height: 'auto' }} />
                                                 </div>
                                             ))}
@@ -550,7 +550,18 @@ export default function Configurator({ auth, product }) {
                                     </div>
                                 </Tabs.Item>
                                 <Tabs.Item title="Designs" >
-                                    <button onClick={() => DesignerFunctions.changeDesign(canvas, '/designs/BLUE-WHITE-JERSEY.svg')}>Change</button>
+                                    {/* <button onClick={() => DesignerFunctions.changeDesign(canvas, '/designs/BLUE-WHITE-JERSEY.svg')}>Change</button> */}
+                                    <div className="p-5 grid grid-cols-4 gap-4">
+                                    {product.designs.map(design => (
+                                        <>
+                                            <div className='rounded-lg dark:bg-zinc-800 p-2 cursor-pointer' onClick={() => DesignerFunctions.changeDesign(canvas, `/storage/${design.file}`)}>
+                                                
+                                            <img src={`/storage/${design.file}`} alt={design.name} />
+                                            {/* {design.name} */}
+                                            </div>
+                                        </>
+                                    ))}
+                                    </div>
                                     <div className="p-4">
                                     {tutorialMode && (
                                         <>

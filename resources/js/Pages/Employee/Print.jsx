@@ -7,6 +7,7 @@ import { Head, usePage } from '@inertiajs/react';
 import { Progress } from 'flowbite-react';
 import PrintQueue from '@/Components/PrintQueue';
 import PrintTable from '@/Components/PrintTable';
+import BackButton from '@/Components/BackButton';
 
 
 export default function Print({ auth, boxes, order, printers }) {
@@ -21,7 +22,7 @@ export default function Print({ auth, boxes, order, printers }) {
 
             <Head title="Dashboard" />
 
-
+<BackButton/>
            <h1 className='text-2xl font-bold mb-8 '>Print</h1>
            <div className="dark:text-gray-100">
             <PrintTable order={order}/>

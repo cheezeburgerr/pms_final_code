@@ -112,12 +112,28 @@ class ProductController extends Controller
         // ]);
 
 
+        // dd($request->image);
 
+        
         // Update the product
         $product->update([
             'product_name' => $request->product_name,
             'product_price' => $request->product_price,
+            'image' => $request->image
         ]);
+
+
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = time().'.'.$image->getClientOriginalExtension();
+            $image->move(public_path('images/products'), $imageName);
+            $product->image = $imageName;
+        } elseif ($product->image) {
+            // Retain the old image if no new image is provided
+            $product->image = $product->image;
+        }
+    
+        $product->save();
 
         // Handle categories and variations
         foreach ($request->categories as $categoryData) {

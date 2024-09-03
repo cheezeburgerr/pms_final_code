@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ModelDesigns;
 use App\Models\ProductModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -55,5 +56,10 @@ class ProductModelController extends Controller
         return redirect()->route('models.index');
     }
 
+    public function edit ($id){
+
+        $model = ProductModel::with('designs')->find($id);
+        return Inertia::render('Models/Edit', ['model'=> $model]);
+    }
 
 }

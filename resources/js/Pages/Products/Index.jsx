@@ -46,7 +46,7 @@ export default function Dashboard({ auth, boxes, order, production, products }) 
                     {products && products.map(product => (
                         <>
                             <Card className='mb-4 dark:bg-zinc-900 dark:border-zinc-800 shadow-none'>
-                                <img src={product.image ? `/images/products/${product.image}` : '/images/placeholder.png'} alt="" className='rounded-md ' />
+                                <img src={product.image ? `/images/products/${product.image}` : '/images/placeholder.png'} alt="" className='rounded-md object-cover h-80' />
                                 <div className="flex justify-between">
                                     <div>
                                         <h3 className='font-bold'>{product.product_name}</h3>

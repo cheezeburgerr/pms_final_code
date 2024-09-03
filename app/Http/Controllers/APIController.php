@@ -138,8 +138,15 @@ class APIController extends Controller
         return response()->json(['message' => 'Records updated successfully'], 200);
     }
 
+    public function get_error(){
+        $lineup = Lineup::where('status', 'Reprint')->get();
+
+        return response()->json($lineup);
+    }
+
+
     public function get_errors($id){
-        $lineup = Lineup::where('order_id', $id)->where('status', 'Error')->get();
+        $lineup = Lineup::where('order_id', $id)->where('status', 'Reprint')->get();
 
         return response()->json($lineup);
     }
@@ -205,4 +212,6 @@ class APIController extends Controller
 
         return response()->json($orders);
     }
+
+    
 }

@@ -3,12 +3,18 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
+import { IconX } from '@tabler/icons-react';
+import SecondaryButton from '@/Components/SecondaryButton';
+import BackButton from '@/Components/BackButton';
 
 export default function EditProduct({ auth, product }) {
-    const { data, setData, put, processing, errors } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
+        _method: 'put',
+        avatar: null,
         product_name: product.product_name,
         product_price: product.product_price,
+        image: product.image,
         categories: product.categories.map(category => ({
             category_id: category.id,
             category_name: category.category_name,
@@ -20,7 +26,7 @@ export default function EditProduct({ auth, product }) {
         }))
     });
 
-
+    const [imagePreview, setImagePreview] = useState(`/images/products/${product.image}`);
 
     const addCategory = () => {
         setData('categories', [...data.categories, { category_name: '', variations: [{ variation_name: '', variation_price: '' }] }]);
@@ -54,10 +60,26 @@ export default function EditProduct({ auth, product }) {
         setData('categories', newCategories);
     };
 
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        setData('image', file);
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log('Submitting form data:', data); // Log the form data
-        put(route('products.update', product.id))
+        post(route('products.update', product.id), {
+            _method: 'put',
+        })
 
     };
 
@@ -69,12 +91,20 @@ export default function EditProduct({ auth, product }) {
             <Head title="Edit Product" />
 
             <div className="dark:text-gray-100">
-                <div className="flex justify-between">
-                    <h1 className='text-2xl font-bold mb-8'>Edit Product</h1>
+            <form onSubmit={handleSubmit}>
+                <div className="flex justify-between items-center  mb-8">
+                    <div className='flex gap-4 items-center'>
+                    <BackButton/>
+                    <h1 className='text-2xl font-bold'>Edit Product</h1>
+                    </div>
+                    <PrimaryButton type="submit" disabled={processing} className='float-right'>
+                        Submit
+                    </PrimaryButton>
                 </div>
 
-                <form onSubmit={handleSubmit}>
-                    <div className="columns-2">
+                
+                    <div className="lg:flex gap-8">
+                    <div className="columns w-1/4">
                         <div className="mb-4">
                             <InputLabel htmlFor="product_name">Product Name</InputLabel>
                             <TextInput
@@ -111,9 +141,9 @@ export default function EditProduct({ auth, product }) {
                                         value={category.category_name}
                                         onChange={(e) => handleCategoryChange(categoryIndex, e)}
                                     />
-                                    <PrimaryButton type="button" onClick={() => removeCategory(categoryIndex)} className="ml-2">
-                                        Remove Category
-                                    </PrimaryButton>
+                                    <SecondaryButton type="button" onClick={() => removeCategory(categoryIndex)} className="ml-2">
+                                    <IconX/>
+                                    </SecondaryButton>
                                 </div>
                                 <div className="ml-4">
                                     <h4 className="text-lg font-semibold mb-2">Variations</h4>
@@ -134,13 +164,13 @@ export default function EditProduct({ auth, product }) {
                                                 onChange={(e) => handleVariationChange(categoryIndex, variationIndex, e)}
                                                 className="ml-2"
                                             />
-                                            <PrimaryButton
+                                            <SecondaryButton
                                                 type="button"
                                                 onClick={() => removeVariation(categoryIndex, variationIndex)}
                                                 className="ml-2"
                                             >
-                                                Remove Variation
-                                            </PrimaryButton>
+                                                <IconX/>
+                                            </SecondaryButton>
                                         </div>
                                     ))}
                                     <PrimaryButton type="button" onClick={() => addVariation(categoryIndex)}>
@@ -153,10 +183,24 @@ export default function EditProduct({ auth, product }) {
                             Add Category
                         </PrimaryButton>
                     </div>
+                    <div>
+                    <InputLabel htmlFor="image">Product Image</InputLabel>
+                            <input
+                                type="file"
+                                name="image"
+                                id="image"
+                                onChange={handleImageChange}
+                                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100"
+                            />
+                    {imagePreview && (
+                                <div className="mt-4">
+                                    <img src={imagePreview} alt="Image Preview" className="w-full h-auto rounded-md"/>
+                                </div>
+                            )}
+                    </div>
+                    </div>
 
-                    <PrimaryButton type="submit" disabled={processing}>
-                        Submit
-                    </PrimaryButton>
+                    
                 </form>
             </div>
         </AdminLayout>

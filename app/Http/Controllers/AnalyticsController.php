@@ -62,13 +62,38 @@ class AnalyticsController extends Controller
         return response()->json(['sales' => $ordersCount, 'orders' => $orders, 'earnings' => $earnings, 'products' => $productCounts, 'lineups' => $lineups, 'variations' => $arrayGroupedByCategoryAndVariation]);
     }
 
-
-    public function production ()
-    {
-        $errors = Lineup::where('status', 'Error')->get();
-        $equipment  = Equipment::all();
-        return response()->json();
+    public function production_chart() {
+        return Inertia::render('ProductionChart');
     }
+
+    public function production()
+{
+    // Fetch errors with status 'Error'
+    $errors = Lineup::where('status', 'Error')->get();
+    
+    // Group by status and count the number of occurrences
+    $status = ProductionDetails::select('status', DB::raw('COUNT(*) as count'))
+        ->groupBy('status')
+        ->orderBy('count', 'desc')
+        ->get();
+    $orders = Order::with('production', 'employees.employee', 'products.products')
+        ->withCount('products', 'lineups')
+        ->whereHas('production', function ($query) {
+            $query->where('status', '!=', 'Pending');
+        })->get();
+    // Fetch all equipment
+    $equipment = Equipment::all();
+    
+    // Return status grouped and counted
+    return response()->json([
+        'status' => $status,
+        'orders' => $orders,
+        'equipment' => $equipment
+    ]);
+}
+
+  
+
     public function variations_count()
     {
         $variations = OrderVariation::selectRaw('variation_id, COUNT(*) as count')->groupBy('category_id')->get();

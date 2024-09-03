@@ -2,7 +2,7 @@ import { Link } from '@inertiajs/react';
 import { IconEye, IconPrinter, IconUserShare } from '@tabler/icons-react';
 import { Progress, Tooltip } from 'flowbite-react';
 import moment from 'moment';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Table from './Table';
 import { useMemo } from 'react';
 import PrimaryButton from './PrimaryButton';
@@ -66,17 +66,49 @@ const ErrorTable = ({errors}) => {
         ],
         []
     );
+    const webSocketChannel = `errors_channel`;
 
+    const [order, setOrder] = useState();
 
+    const connectWebSocket = () => {
+        console.log('Attempting to connect to WebSocket...');
+        console.log(order)
+        window.Echo.channel(webSocketChannel)
+            .listen('GotError', (e) => {
+                console.log('GotError event received:', e);
+                fetchOrders();
+            })
+            .error((error) => {
+                console.error('WebSocket Error:', error);
+            })
+            .subscribed(() => {
+                console.log('Successfully connected to channel:', webSocketChannel);
+            });
+    }
+
+    useEffect(() => {
+        connectWebSocket();
+        // fetchOrders();
+    }, []);
+
+    const fetchOrders = async () => {
+        try {
+            const response = await axios.get(`/api/get-errors`);
+            setOrder(response.data);
+            console.log(response.data)
+        } catch (error) {
+            console.error('Error fetching printers:', error);
+        }
+    };
 
     return (
         <>
             <div>
                 <div className="flex justify-between items-center mb-4">
                     <h1>Errors to be Reprinted</h1>
-
+ 
                 </div>
-            <Table columns={columns} data={errors}/>
+            <Table columns={columns} data={order ? order : errors}/>
             </div>
         </>
     )

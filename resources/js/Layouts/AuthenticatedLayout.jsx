@@ -136,6 +136,12 @@ export default function Authenticated({ user, header, children }) {
                         <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
                             Dashboard
                         </ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('orders.index')} active={route().current('orders.index')}>
+                            Order
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('designer.index')} active={route().current('designer.index')}>
+                            3D Designer
+                        </ResponsiveNavLink>
                         {/* <ResponsiveNavLink href={route('show.products')} active={route().current('show.products')}>
                             Order
                         </ResponsiveNavLink> */}
@@ -184,7 +190,7 @@ export default function Authenticated({ user, header, children }) {
             <div className="flex flex-col min-h-[calc(100vh-75px)]">
                 <main className='bg-gray-200 dark:bg-zinc-950 flex-grow text-zinc-800 overflow-x-hidden'>{children}</main>
 
-                {user && !route().current('designer.index') && (
+                {user && !route().current('designer.index') && !route().current('chat') &&(
                     <>
                         <ChatBox user_id={user.id} />
                     </>

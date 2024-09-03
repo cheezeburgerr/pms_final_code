@@ -7,6 +7,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { fabric } from 'fabric';
 import TextInput from '@/Components/TextInput';
+import ModelViewer from './ModelViewer';
 
 export default function Models({ auth, models }) {
     const { props } = usePage();
@@ -141,6 +142,12 @@ export default function Models({ auth, models }) {
                 <TextInput onChange={(e) => setName(e.target.value)}/>
                 <input type="file" accept=".glb,.gltf,.obj" onChange={handleFileChange} />
                 <input type="file" accept=".svg" onChange={handleSvgChange} />
+
+                {modelFile && (
+                    <>
+                      
+                    </>
+                )}
                 {modelUrl && (
                     <div>
                         <div ref={modelContainerRef} id="model-container" className='w-[100px] h-[500px]'></div>

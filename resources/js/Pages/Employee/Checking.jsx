@@ -8,7 +8,7 @@ import moment from 'moment';
 import { useMemo, useEffect, useState } from 'react';
 import { getStatusColor } from '@/statusColors'; // Import the getStatusColor function
 
-export default function Checking({ auth, order, artists }) {
+export default function Checking({ auth, order, artists , allOrders}) {
     const { data, setData, post, processing, errors } = useForm({
         artist: '',
         role: 'Artist'
@@ -102,11 +102,16 @@ export default function Checking({ auth, order, artists }) {
                     </Toast>
                 </div>
             )}
-            <Head title="Orders Without Artist" />
+            <Head title="Checking" />
             <h1 className='text-2xl font-bold mb-8'>Checking</h1>
             <div className="dark:text-gray-100">
                 {/* Render KanbanBoard with orders */}
                 <Table data={order} columns={columns} />
+            </div>
+            <h1>Errors Checking</h1>
+            <div className="dark:text-gray-100">
+                {/* Render KanbanBoard with orders */}
+                <Table data={allOrders} columns={columns} />
             </div>
         </EmployeeLayout>
     );

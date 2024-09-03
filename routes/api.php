@@ -51,6 +51,7 @@ Route::put('/update-printing/{id}', [APIController::class, 'update_printing']);
 
 Route::put('/return-records', [APIController::class, 'return_records']);
 Route::get('/get-errors/{id}', [APIController::class, 'get_errors']);
+Route::get('/get-errors', [APIController::class, 'get_error']);
 
 Route::put('/reprint-errors/{id}', [APIController::class, 'reprint_errors']);
 Route::put('/printers/{printer}', [APIController::class, 'updateStatus']);
@@ -70,5 +71,6 @@ Route::get('/order-chat/{order}', [ChatRoomController::class, 'order']);
 
         Route::get('/orders-per-month', [AnalyticsController::class, 'getOrdersPerMonth']);
         Route::get('/sales', [AnalyticsController::class, 'sales']);
+        Route::get('/production', [AnalyticsController::class, 'production']);
 
 

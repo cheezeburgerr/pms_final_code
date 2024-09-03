@@ -300,7 +300,7 @@ export function loadSvg(path, canvas) {
         });
     })
 
-    loadText(canvas);
+    // loadText(canvas);
 
 }
 

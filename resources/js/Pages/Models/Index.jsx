@@ -22,11 +22,13 @@ export default function Models({ auth, models }) {
             </div>
             <div className="dark:text-gray-100 grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {models && models.map(model => (
-                    <div key={model.id} className="mb-8 rounded-lg dark:bg-zinc-900 p-6 dark:border-zinc-800 bg-gray-100">
+                    <Link href={route('models.edit', model.id)}>
+                        <div key={model.id} className="mb-8 rounded-lg dark:bg-zinc-900 p-6 dark:border-zinc-800 bg-gray-100">
 
-                        <ModelViewer path={`/storage/models/${model.path}`} /> {/* Display the 3D model */}
-                        <h3 className="text-lg font-bold">{model.name}</h3>
-                    </div>
+                            <ModelViewer path={`/storage/models/${model.path}`} /> {/* Display the 3D model */}
+                            <h3 className="text-lg font-bold">{model.name}</h3>
+                        </div>
+                    </Link>
                 ))}
             </div>
         </EmployeeLayout>

@@ -1,6 +1,7 @@
 // OrderFormStepTwo.js
 import React, { useState, useEffect } from 'react';
 import PrimaryButton from '@/Components/PrimaryButton';
+import Checkbox from '@/Components/Checkbox';
 
 export default function OrderFormStepTwo({ data, setData, prevStep, nextStep, products }) {
     const [selectedProducts, setSelectedProducts] = useState(data.products || []);
@@ -38,7 +39,10 @@ export default function OrderFormStepTwo({ data, setData, prevStep, nextStep, pr
                     >
                         <img src={`/images/products/${product.image}`} alt="" className='rounded-md'/>
                         <div className="flex justify-between">
+                            <div className='flex gap-2 items-center'>
+                            <Checkbox  checked={selectedProducts.some(selectedProduct => selectedProduct.id === product.id)}/>
                             <p className='font-bold text-lg'>{product.product_name}</p>
+                            </div>
                             <p>{product.product_price}.00</p>
                         </div>
                     </div>

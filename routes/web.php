@@ -5,16 +5,21 @@ use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\ChatRoomController;
 use App\Http\Controllers\CheckingController;
 use App\Http\Controllers\DesignerController;
+use App\Http\Controllers\DesignsController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeesController;
 use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\FinalCheckingController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\ModelDesignsController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderProductController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductModelController;
 use App\Http\Controllers\ProfileController;
+use App\Models\Designs;
+use App\Models\ModelDesigns;
+use App\Models\Products;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -30,7 +35,9 @@ use Inertia\Inertia;
 // });
 
 Route::get('/', function () {
-    return Inertia::render('Dashboard');
+    $products = Products::all();
+    $designs = Designs::limit(6)->get();
+    return Inertia::render('Dashboard', ['products' => $products, 'designs' => $designs]);
 })->name('dashboard');
 
 // Route::get('order', [OrderController::class, 'index'])->name('order');
@@ -75,8 +82,11 @@ Route::prefix('employee')->group(function () {
         Route::post('logout', [EmployeeController::class, 'logout'])->name('employee.logout');
 
         Route::resource('models', ProductModelController::class);
+        Route::resource('model_designs', ModelDesignsController::class);
+        Route::resource('designs', DesignsController::class);
 
         Route::get('printers', [EquipmentController::class, 'index'])->name('printers');
+        Route::post('/printer_update/{id}', [EquipmentController::class, 'updateStatus'])->name('printer_update');
 
         Route::get('/orders/export-pdf', [OrderController::class, 'exportPdf'])->name('orders.exportPdf');
     });
@@ -106,6 +116,7 @@ Route::prefix('admin')->group(function () {
 
 
         Route::get('/sales', [AnalyticsController::class, 'counts'])->name('sales');
+        Route::get('/production', [AnalyticsController::class, 'production_chart'])->name('production');
         Route::resource('/products', ProductController::class);
 
         // Route::get('/orders/export-pdf', [OrderController::class, 'exportPdf'])->name('orders.exportPdf');
@@ -126,8 +137,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/lineup-edit/{id}', [OrderController::class, 'lineup_edit'])->name('lineup.edit');
     Route::put('/lineup-update', [OrderController::class, 'lineup_update'])->name('lineup_update');
     Route::get('/return/{id}', [OrderController::class, 'return'])->name('orders.return');
-    Route::put('/return-records', [OrderController::class, 'return_records'])->name('employee.returnrecords');
+    Route::put('/return-records', [OrderController::class, 'return_records'])->name('returnrecords');
     Route::resource('orders', OrderController::class);
+    Route::get('order', [OrderController::class,'order'])->name('order');
     Route::put('/order-update/{id}', [OrderController::class, 'update'])->name('order.update');
     Route::resource('order-product', OrderProductController::class);
     Route::get('approval/{id}', [OrderController::class, 'approval'])->name('orders.approval');

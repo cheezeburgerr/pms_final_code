@@ -53,9 +53,6 @@ export default function ReturnRecords({ uncheckedRecords, closeable=true, onClos
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
-
-
         put(route('employee.returnrecords'), data);
     };
 

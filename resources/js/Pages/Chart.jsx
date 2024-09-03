@@ -127,7 +127,7 @@ const Chart = ({ auth }) => {
                 Header: 'Action',
                 Cell: ({ row }) => (
                     <div className='flex gap-4 justify-center items-center'>
-                        <Link href={route('employee.vieworder', row.original.id)}>
+                        <Link href={route('admin.vieworder', row.original.id)}>
                             <Tooltip content="View">
                                 <IconEye className='hover:text-aqua transition' />
                             </Tooltip>
@@ -138,7 +138,7 @@ const Chart = ({ auth }) => {
             },
 
         ],
-        [auth.employee.dept_id]
+        []
 
 
     );

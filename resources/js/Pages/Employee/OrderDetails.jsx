@@ -7,6 +7,7 @@ import { IconEdit, IconPackage, IconPencil, IconPhoto, IconReport, IconTag, Icon
 import moment from 'moment';
 import OrderReport from '../Reports/OrderReport';
 import { pdf } from '@react-pdf/renderer';
+import BackButton from '@/Components/BackButton';
 
 export default function OrderDetails({ auth, products, order }) {
     // State to track the fullscreen image
@@ -41,6 +42,7 @@ export default function OrderDetails({ auth, products, order }) {
 
             <div className="">
                 <div className=" mx-auto sm:px-6 lg:px-8">
+                    <BackButton/>
                     <h1 className="font-bold text-3xl mb-4">Order Details</h1>
                     <Card className='dark:bg-zinc-900 dark:border-zinc-800'>
                         <div className="flex justify-between">

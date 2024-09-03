@@ -9,6 +9,7 @@ import Message from '@/Components/ChatBox/Message';
 import classNames from 'classnames';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
+import { Link } from '@inertiajs/react';
 
 const Chat = ({ auth, users, orders }) => {
     const [currentMessages, setCurrentMessages] = useState();
@@ -152,7 +153,7 @@ const Chat = ({ auth, users, orders }) => {
                                             className='h-10 rounded-full'
                                         />
                                         <div>
-                                            <p className="font-bold text-ellipsis">{user.name}</p>
+                                            <p className="font-bold text-ellipsis truncate">{user.name}</p>
                                             {user.chatroom && user.chatroom.lastmessage && (
                                                 <p className='text-sm text-gray-500'>{user.chatroom.lastmessage.message}</p>
                                             )}
@@ -178,7 +179,7 @@ const Chat = ({ auth, users, orders }) => {
                                             className='h-10 rounded-full'
                                         />
                                         <div>
-                                            <p className="font-bold text-ellipsis">{order.team_name}</p>
+                                            <p className="font-bold text-ellipsis truncate">{order.team_name}</p>
                                             {order.chatroom && order.chatroom.lastmessage && (
                                                 <p className='text-sm text-gray-500'>{order.chatroom.lastmessage.message}</p>
                                             )}
@@ -193,6 +194,7 @@ const Chat = ({ auth, users, orders }) => {
                             <ChatContent
                             chatRoom={chatRoom && chatRoom}
                                 messages={messages}
+                                order={chatRoom && (chatRoom.type === 'Order' && chatRoom.order.latestapproved)}
                                 handleSubmit={handleSubmit}
                                 message={message}
                                 setMessage={setMessage}
@@ -225,7 +227,7 @@ const Chat = ({ auth, users, orders }) => {
 export default Chat;
 
 
-const ChatContent = ({ chatRoom, messages, handleSubmit, message, setMessage, file, setFile, scroll, user_id }) => {
+const ChatContent = ({ chatRoom, messages, handleSubmit, message, setMessage, file, setFile, scroll, user_id, order }) => {
     const fileInputRef = useRef(null);
 
     const handleFileClick = () => {
@@ -243,6 +245,27 @@ const ChatContent = ({ chatRoom, messages, handleSubmit, message, setMessage, fi
     return (
         <div className="p-2 dark:text-zinc-100">
             <h1 className="font-bold text-xl mb-4">{chatRoom ? chatRoom.name : 'Chat Box'}</h1>
+            <div className="relative">
+                {order && (
+                <>
+                    <Card className='absolute inset-x-0 animate-pulse bg-gradient-to-r from-aqua to-purple-500 dark:border-zinc-800 mb-4'>
+                        <div className="w-full flex gap-4 justify-between">
+                            <div>
+                                <p className="font-extrabold text-xl text-zinc-900">Waiting for Approval</p>
+                                <p className='text-zinc-900'>We are waiting for the client to check the design.</p>
+                            </div>
+                            {/* <div>
+                                <Link href={route('orders.approval', chatRoom.order.id)}>
+                                    <SecondaryButton>
+                                        Check
+                                    </SecondaryButton>
+                                </Link>
+                            </div> */}
+                        </div>
+                    </Card>
+                </>
+            )}
+            </div>
             <div className="chat-box overflow-y-auto h-[calc(100vh-250px)] no-scrollbar py-4">
                 {messages && messages.map((msg, index) => (
                     <>

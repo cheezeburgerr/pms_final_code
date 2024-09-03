@@ -20,4 +20,9 @@ class Products extends Model
     {
         return $this->hasMany(Category::class, 'product_id');
     }
+
+    public function designs()
+    {
+        return $this->hasMany(Designs::class, 'product_id');
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendErrors;
 use App\Jobs\SendNotif;
 use App\Models\ApproveDesign;
 use App\Models\ChatRoom;
@@ -180,6 +181,7 @@ class EmployeeController extends Controller
 
     $requestData = $request->input('records');
 
+    $count = 0;
     foreach ($requestData as $recordData) {
 
         $record = Lineup::find($recordData['id']);
@@ -188,8 +190,11 @@ class EmployeeController extends Controller
             $record->status = 'Error';
             $record->note = $recordData['errorType'];
             $record->save();
+
+            $count++;
         }
     }
+
 
 
     return to_route('employee.dashboard');
@@ -378,6 +383,8 @@ class EmployeeController extends Controller
             $lineup->note = null;
             $lineup->save();
         }
+
+        SendErrors::dispatch('Error alert');
 
         return redirect()->back();
     }

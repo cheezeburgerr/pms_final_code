@@ -15,6 +15,11 @@ Broadcast::channel('notifications_channel.*', function ($user) {
     return true;
 });
 
+Broadcast::channel('errors_channel.*', function ($user) {
+    Auth::check();
+    return true;
+});
+
 Broadcast::channel('chat.{chatRoomId}', function ($user, $chatRoomId) {
     return ChatRoom::find($chatRoomId) !== null;
 });

@@ -31,6 +31,11 @@ class OrderController extends Controller
         return Inertia::render('Order', ['products' => $products]);
     }
 
+    public function order () {
+
+        $products = Products::with('categories.variation')->get();
+        return Inertia::render('Order', ['products' => $products]);
+    }
 
     public function edit ($id)
     {
@@ -359,6 +364,8 @@ return $dompdf->stream('orders.pdf', ['Attachment' => false]);
 
         $requestData = $request->input('records');
 
+        $orderId = 0;
+        $count = 0;
         foreach ($requestData as $recordData) {
 
             $record = Lineup::find($recordData['id']);
@@ -367,10 +374,27 @@ return $dompdf->stream('orders.pdf', ['Attachment' => false]);
                 $record->status = 'Error';
                 $record->note = $recordData['errorType'];
                 $record->save();
+                $count++;
             }
+
+            
+            $orderId = $record->order_id;
         }
 
 
+        $users = Order::with('employees')->find($orderId);
+
+        foreach ($users->employees as $user) {
+            $notif = Notification::create([
+                'user_id' => $user->user_id,
+                'title' => ''.$count.' Errors Returned',
+                'message' => 'Customer has returned '.$count.' order with errors',
+                'url' => ''
+            ]);
+            SendNotif::dispatch($notif);
+        }
+
+        
         return to_route('dashboard');
     }
 

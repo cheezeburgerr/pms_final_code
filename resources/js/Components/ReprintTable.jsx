@@ -7,6 +7,7 @@ import SecondaryButton from './SecondaryButton';
 import InputLabel from './InputLabel';
 import moment from 'moment';
 import ReturnRecords from './ReturnRecords';
+import { router } from '@inertiajs/react';
 // import ReturnRecords from './ReturnRecords';
 
 function ReprintTable({ order }) {
@@ -95,13 +96,18 @@ function ReprintTable({ order }) {
 
         const unchecked = lineup.filter(item => !statusesToFilter.includes(item.status));
 
-        setUncheckedRecords(unchecked);
+        if(unchecked.length > 0){
+            setUncheckedRecords(unchecked);
         setShowModal(true);
+        }
+        else{
+            router.put(route('employee.returnrecords'), data);
+        }
     };
 
     return (
         <div>
-            <div className="lg:p-4 mb-4">
+            <div className=" mb-4">
                 <div className="columns-2 border dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900 p-4 rounded-md shadow-none mb-4">
                     <div className="break-inside-avoid-column">
                         <div>

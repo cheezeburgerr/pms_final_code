@@ -8,6 +8,7 @@ import { Progress } from 'flowbite-react';
 import PrintQueue from '@/Components/PrintQueue';
 import PrintTable from '@/Components/PrintTable';
 import ReprintTable from '@/Components/ReprintTable';
+import BackButton from '@/Components/BackButton';
 
 
 export default function Reprint({ auth, boxes, order, printers }) {
@@ -22,7 +23,7 @@ export default function Reprint({ auth, boxes, order, printers }) {
 
             <Head title="Dashboard" />
 
-
+<BackButton/>
            <h1 className='text-2xl font-bold mb-8 '>Reprint</h1>
            <div className="dark:text-gray-100">
             <ReprintTable order={order}/>

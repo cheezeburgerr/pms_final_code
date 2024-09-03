@@ -2,7 +2,7 @@ import { createContext, useContext, useState } from 'react';
 import { Link } from '@inertiajs/react';
 import Dropdown from '@/Components/Dropdown';
 import DarkModeToggle from '@/Components/DarkModeToggle';
-import { IconLayoutBoard, IconShirt, IconPackage, IconUserCancel, IconCheck, IconMenu, IconMenu2, IconBell, IconMessage2, Icon3dCubeSphere, IconMessage } from '@tabler/icons-react';
+import { IconLayoutBoard, IconShirt, IconPackage, IconUserCancel, IconCheck, IconMenu, IconMenu2, IconBell, IconMessage2, Icon3dCubeSphere, IconMessage, IconPrinter } from '@tabler/icons-react';
 import { Button, Popover } from 'flowbite-react';
 import NotificationBox from '@/Components/Notification/NotificationBox';
 import SearchBox from '@/Components/SearchBar/SearchBox';
@@ -39,6 +39,11 @@ export default function EmployeeLayout({ user, children }) {
                                 <>
                                     <SidebarItem href={route('employee.pending')} active={route().current('employee.pending')} icon={<IconShirt />} text='New Orders' />
 
+                                </>
+                            )}
+                            {user.dept_id === 3 && (
+                                <>
+                                <SidebarItem href={route('printers')} active={route().current('printers')} icon={<IconPrinter />} text='Printer' />
                                 </>
                             )}
                             {user.dept_id === 1 && user.is_supervisor === 1 && <SidebarItem href={route('employee.artist')} active={route().current('employee.artist')} icon={<IconUserCancel />} text='Without Artist' />}
