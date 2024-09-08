@@ -3,7 +3,7 @@ import { Link } from '@inertiajs/react';
 
 export default function Guest({ children }) {
     return (
-        <div className="min-h-screen md:grid grid-cols-2 sm:justify-center items-center sm:pt-0 bg-gray-100 dark:bg-black">
+        <div className="min-h-screen md:grid grid-cols-2 sm:justify-center items-center sm:pt-0 bg-gray-100 dark:bg-zinc-900">
             <div className='p-8 bg-black h-48 md:h-screen bg-cover' style={{ backgroundImage: `url(${'/images/basketballplayer.jpg'})` }}>
                 <Link href="/">
                     <ApplicationLogo className="w-20 h-20 fill-current text-gray-500" />

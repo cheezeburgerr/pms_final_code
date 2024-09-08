@@ -7,7 +7,7 @@ import OrderVariationsPage from './Order/OrderVariationsPage';
 import PrimaryButton from '@/Components/PrimaryButton';
 import LineupForm from './Order/LineupForm';
 
-export default function OrderForm({ auth, products }) {
+export default function OrderForm({ auth, products, product_id, image }) {
     const { data, setData, post } = useForm({
         team_name: '',
         due_date: '',
@@ -15,8 +15,11 @@ export default function OrderForm({ auth, products }) {
         variations: {},
         lineups: [],
         files: [],
+        selectedPic: image && image.image
     });
 
+
+    console.log(image)
     const [step, setStep] = useState(1);
     const [transitionClass, setTransitionClass] = useState('');
 
@@ -61,6 +64,8 @@ export default function OrderForm({ auth, products }) {
                                         data={data}
                                         setData={setData}
                                         nextStep={nextStep}
+                                        product_id={product_id ? product_id : null}
+                                        image = {image ? image : null}
                                     />
                                 )}
                                 {step === 2 && (

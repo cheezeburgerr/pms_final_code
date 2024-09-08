@@ -54,7 +54,7 @@ export default function Profile({ auth, mustVerifyEmail, status, orders }) {
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6 ">
                     <div className="p-8 flex flex-col md:flex-row justify-center items-center gap-x-16 bg-gradient-to-r from-aqua to-teal-500 rounded-xl text-gray-100 text-center w-full">
                         <div className='mb-4'>
-                            <img src={auth.user.profile_image ? `/images/customers/${auth.user.profile_image}` : '/images/customers/profile.jpg'} alt="" className='h-32 lg:h-48 rounded-full me-2' />
+                            <img src={auth.user.image ? `/images/customers/profile/${auth.user.image}` : '/images/customers/profile.jpg'} alt="" className='h-32 lg:h-48 rounded-full me-2' />
                         </div>
 
                         <div className="md:w-1/2">

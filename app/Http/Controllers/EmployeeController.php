@@ -24,7 +24,9 @@ class EmployeeController extends Controller
 {
     //
 
-
+    public function profile(User $user){
+        return Inertia::render("Employee/Profile/Index", ['employee' => $user]);
+    }
     public function login()
     {
         if (Auth::guard('employee')->user()) {

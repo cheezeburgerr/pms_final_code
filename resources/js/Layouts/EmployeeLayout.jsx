@@ -81,6 +81,9 @@ export default function EmployeeLayout({ user, children }) {
                                         </span>
                                     </Dropdown.Trigger>
                                     <Dropdown.Content>
+                                    <Dropdown.Link href={route('employee.profile', user.id)} as="button">
+                                            Profile
+                                        </Dropdown.Link>
                                         <Dropdown.Link href={route('employee.logout')} method="post" as="button">
                                             Log Out
                                         </Dropdown.Link>

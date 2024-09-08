@@ -5,7 +5,7 @@ import { IconUpload, IconX } from '@tabler/icons-react';
 import InputLabel from '@/Components/InputLabel';
 import { Button } from '@radix-ui/themes';
 
-export default function OrderFormStepOne({ data, setData, nextStep }) {
+export default function OrderFormStepOne({ data, setData, nextStep, product_id, image }) {
     const fileInputRef = useRef(null);
     const [uploadedFiles, setUploadedFiles] = useState([]);
 
@@ -14,6 +14,7 @@ export default function OrderFormStepOne({ data, setData, nextStep }) {
         setData(name, value);
     };
 
+    // console.log(image)
     const handleFileChange = (e) => {
         const files = e.target.files;
         setData('files', files);
@@ -105,6 +106,11 @@ export default function OrderFormStepOne({ data, setData, nextStep }) {
                             </button>
                         </div>
                     ))}
+                </div>
+                <div>
+                    {image && (
+                        <img src={`/storage/${image.image}`} alt="" />
+                    )}
                 </div>
             </div>
             {/* <div className="mt-4">

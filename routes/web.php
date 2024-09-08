@@ -48,6 +48,7 @@ Route::post('/broadcasting/auth', function () {
  });
 
 
+ 
 //  Route::middleware(['auth:sanctum', 'verified'])->get('/chat/{user}', [ChatRoomController::class, 'index'])->name('chat');
 Route::post('/messages', [MessageController::class, 'store']);
 
@@ -88,6 +89,7 @@ Route::prefix('employee')->group(function () {
         Route::get('printers', [EquipmentController::class, 'index'])->name('printers');
         Route::post('/printer_update/{id}', [EquipmentController::class, 'updateStatus'])->name('printer_update');
 
+        Route::get('/profile/{id}', [EmployeeController::class,'profile'])->name('employee.profile');
         Route::get('/orders/export-pdf', [OrderController::class, 'exportPdf'])->name('orders.exportPdf');
     });
 });
@@ -127,19 +129,21 @@ Route::prefix('admin')->group(function () {
 //     return Inertia::render('Dashboard');
 // })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('designer', DesignerController::class);
     Route::get('/profile-show', [ProfileController::class, 'index'])->name('profile.index');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::put('/picture', [ProfileController::class, 'picture'])->name('profile.picture');
 
     Route::get('/lineup-edit/{id}', [OrderController::class, 'lineup_edit'])->name('lineup.edit');
     Route::put('/lineup-update', [OrderController::class, 'lineup_update'])->name('lineup_update');
     Route::get('/return/{id}', [OrderController::class, 'return'])->name('orders.return');
     Route::put('/return-records', [OrderController::class, 'return_records'])->name('returnrecords');
     Route::resource('orders', OrderController::class);
-    Route::get('order', [OrderController::class,'order'])->name('order');
+    Route::resource('designs', DesignsController::class);
+    Route::post('order', [OrderController::class,'order'])->name('order');
     Route::put('/order-update/{id}', [OrderController::class, 'update'])->name('order.update');
     Route::resource('order-product', OrderProductController::class);
     Route::get('approval/{id}', [OrderController::class, 'approval'])->name('orders.approval');

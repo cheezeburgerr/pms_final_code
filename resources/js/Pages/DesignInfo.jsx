@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import PrimaryButton from '@/Components/PrimaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
@@ -7,8 +7,38 @@ import TextInput from '@/Components/TextInput';
 import SecondaryButton from '@/Components/SecondaryButton';
 
 export default function DesignInfo({ design, auth }) {
+    const [imageFile, setImageFile] = useState(null);
 
+    // useEffect(() => {
+    //     const fetchImage = async () => {
+    //         try {
+    //             const response = await fetch(`/storage/${design.image}`);
+    //             const blob = await response.blob();
+                
+    //             // Convert blob to file (optional)
+    //             const file = new File([blob], "image.jpg", { type: blob.type });
+                
+    //             // Set the file to state or use it directly
+    //             setImageFile(file);
+    //         } catch (error) {
+    //             console.error("Error fetching image:", error);
+    //         }
+    //     };
 
+        
+    //     fetchImage();
+        
+    // }, []);
+
+    console.log(imageFile)
+    const handleOrder = (productId) => {
+        const formData = new FormData();
+        formData.append('product_id', productId);
+        formData.append('image', design.id);
+    
+        router.post(`/order`, formData);
+    };
+    
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -40,7 +70,8 @@ export default function DesignInfo({ design, auth }) {
                                 ))}
                                 </div>
                             </div>
-                            <PrimaryButton>Order</PrimaryButton>
+                            <PrimaryButton onClick={() => handleOrder(design.product.id)}>Order</PrimaryButton>
+
                         </div>
                     </div>
                 </div>

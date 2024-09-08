@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\SendNotif;
 use App\Models\ApproveDesign;
+use App\Models\Designs;
 use App\Models\Lineup;
 use App\Models\Notification;
 use App\Models\Order;
@@ -20,6 +21,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\File;
 
 class OrderController extends Controller
 {
@@ -31,10 +33,15 @@ class OrderController extends Controller
         return Inertia::render('Order', ['products' => $products]);
     }
 
-    public function order () {
+    public function order (Request $request) { 
 
+        // dd($request->image);
+
+        $product_id = $request->product_id; 
+        $design = Designs::findOrFail($request->image);
+        // dd($image);
         $products = Products::with('categories.variation')->get();
-        return Inertia::render('Order', ['products' => $products]);
+        return Inertia::render('Order', ['products' => $products, 'product_id' => $product_id, 'image' => $design]);
     }
 
     public function edit ($id)
@@ -143,7 +150,7 @@ class OrderController extends Controller
         //     // add other lineup fields validations as required
         // ]);
 
-        // dd($request);
+        // dd($request->all());
 
         $total_price = 0;
 
@@ -169,6 +176,26 @@ class OrderController extends Controller
                 ]);
             }
         }
+
+
+        $sourcePath = storage_path('app/public/'.$request->selectedPic);
+        if (File::exists($sourcePath)) {
+
+            $cleanedString = str_replace("designs/", "", $request->selectedPic);
+            $destinationPath = public_path('images/orders/' . $order->id.$cleanedString);
+            File::copy($sourcePath, $destinationPath);
+
+            $order->files()->create([
+                'order_id' => $order->id,
+                'path' => $destinationPath,
+                'file_name' => $order->id.$cleanedString,
+            ]);
+
+        } else {
+
+            echo "Source image file not found";
+        }
+
 
         foreach ($request['products'] as $product) {
             $orderProduct = OrderProduct::create([
