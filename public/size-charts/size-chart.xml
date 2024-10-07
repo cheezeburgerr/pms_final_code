@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sizeCharts>
+    <product id="1">
+        <name>Adult Jersey</name>
+        <size>
+            <sizeType>XS</sizeType>
+            <measurements>
+                <chest>34</chest>
+                <waist>30</waist>
+            </measurements>
+        </size>
+        <size>
+            <sizeType>S</sizeType>
+            <measurements>
+                <chest>36</chest>
+                <waist>32</waist>
+            </measurements>
+        </size>
+    </product>
+    <product id="2">
+        <name>Kids Jersey</name>
+        <size>
+            <sizeType>XS</sizeType>
+            <measurements>
+                <chest>28</chest>
+                <waist>24</waist>
+            </measurements>
+        </size>
+        <!-- Add more sizes -->
+    </product>
+</sizeCharts>

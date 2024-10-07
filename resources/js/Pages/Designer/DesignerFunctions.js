@@ -18,23 +18,25 @@ if(obj.type !== 'path'){
     if (obj.id !== 'BG') {
         var colorPickerId = 'colorPicker_' + obj.id;
         var colorContainer = document.createElement('div');
-        colorContainer.classList.add('w-full');
+        colorContainer.classList.add('w-full', 'text-center', 'lg:flex', 'mb-1');
         var colorPickerInput = document.createElement('input');
         colorPickerInput.classList.add('me-4');
         colorPickerInput.type = 'color';
 
-        var colorText = document.createElement('span');
-        colorText.classList.add('me-4', 'dark:text-gray-100');
+        var colorText = document.createElement('p');
+        colorText.classList.add('me-4', 'dark:text-gray-100', 'text-xs');
         colorText.textContent = obj.id;
         colorPickerInput.id = colorPickerId;
         colorPickerInput.value = obj.fill;
         const cont = document.getElementById('colorPickerContainer');
+        cont.classList.add('lg:block');
         // cont.innerHTML = "";
         colorContainer.appendChild(colorPickerInput);
 
+        
         colorContainer.appendChild(colorText);
 
-
+        
         cont.appendChild(colorContainer);
 
         // Listen for color changes and update canvas
@@ -132,6 +134,52 @@ export function displayTextObjects(canvas) {
     });
 }
 
+export function displayObjects(canvas) {
+    var layersDiv = document.getElementById('layers');
+    
+    layersDiv.innerHTML = ""; // Clear previous content
+
+    if(canvas) {
+        canvas.getObjects().forEach(function (object, index) {
+
+            console.log(object);
+            if (object.id != 'ZONES') {
+                var textContent = object.name;
+    
+                // Create a container div to hold text and delete button
+                var containerDiv = document.createElement('div');
+                containerDiv.classList.add('flex', 'items-center', 'mb-2', 'w-full', 'bg-gray-50', 'dark:bg-zinc-800',  'rounded-md', 'text-zinc-700', 'dark:text-gray-100','p-2', 'hover:bg-gray-900'); // Add Tailwind classes for styling
+    
+    
+                // Create span for text
+                var textNode = document.createElement('span');
+                textNode.textContent = textContent;
+                textNode.classList.add('font-bold', 'w-full'); // Add Tailwind classes for styling
+                containerDiv.appendChild(textNode);
+    
+                // Create a delete button
+                var deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.onclick = function () {
+                    event.stopPropagation();
+                    canvas.remove(object);
+                    canvas.renderAll();
+                    displayTextObjects(canvas);
+                };
+                deleteButton.classList.add('font-bold', 'px-2', 'py-1', 'rounded', 'ml-2'); // Add Tailwind classes for styling
+                containerDiv.appendChild(deleteButton);
+    
+    
+                containerDiv.onclick = function () {
+                    canvas.setActiveObject(object);
+                    canvas.requestRenderAll();
+    
+                };
+                layersDiv.appendChild(containerDiv);
+            }
+        });
+    }
+}
 
 export function displayImages(canvas) {
     var imageObjectsDiv = document.getElementById('images');
@@ -175,21 +223,31 @@ export function displayImages(canvas) {
     });
 }
 
-export function addRect(canvas, setAddToModel) {
+export function addRect(canvas, setAddToModel, setCanvasState) {
     // var text = document.getElementById('text-input').value;
     setAddToModel(true);
     console.log('rect clicked');
     // Set canvas selection mode to 'mouse' to enable selection
     canvas.selection = 'mouse';
 
-
+    var gradient = new fabric.Gradient({
+        type: 'linear', // or 'radial' for radial gradient
+        gradientUnits: 'pixels', // or 'percentage'
+        coords: { x1: 40, y1: 100, x2: 100, y2: 0 }, // Starting and ending coordinates
+        colorStops: [
+          { offset: 0, color: '#0000ff' },
+          { offset: 1, color: '#00ffff' },
+          
+        ]
+      });
     // Listen for click event to place the text
     canvas.on('mouse:down', function (event) {
         var pointer = canvas.getPointer(event.e);
         var shape = new fabric.Rect({
             left: pointer.x, // Half of rectangle width subtracted from canvas center
             top: pointer.y, // Half of rectangle height subtracted from canvas center
-            fill: "#00ffff",
+            fill: gradient,
+            name: "Rectangle",
             width: 100,
             height: 100,
             transparentCorners: false,
@@ -206,7 +264,9 @@ export function addRect(canvas, setAddToModel) {
 
         displayShapes(canvas);
         setAddToModel(false);
+        setCanvasState(canvas);
     });
+    
 
 }
 
@@ -535,8 +595,9 @@ export function loadText(canvas) {
     }
   }
 
-  export function addSvgToCanvas  (svgUrl, color, canvas)  {
+  export function addSvgToCanvas  (svgUrl, color, canvas, setAddToModel)  {
 
+    setAddToModel(true);
     console.log('rect clicked');
     // Set canvas selection mode to 'mouse' to enable selection
     canvas.selection = 'mouse';
@@ -563,9 +624,10 @@ export function loadText(canvas) {
             canvas.off('mouse:down');
             canvas.renderAll();
         });
+        setAddToModel(false);
     });
 
-
+    
 
 };
 export function handleStrokeColorChange  (color, canvas, setStrokeColor) {
@@ -610,7 +672,7 @@ export function handleFillColorChange  (color, canvas, setSelectedColor) {
 };
 
 
-export function addImage (canvas) {
+export function addImage (canvas, setAddToModel) {
     const fileInput = document.getElementById('upload-image');
             if (fileInput.files.length > 0) {
                 const file = fileInput.files[0];
@@ -620,6 +682,11 @@ export function addImage (canvas) {
                     uploadImage(canvas, imageUrl);
                 };
                 reader.readAsDataURL(file);
+                setAddToModel(true);
+
+                canvas.on("mouse:down", function(event){
+                    setAddToModel(false);
+                })
             } else {
                 console.log('No file selected.');
             }
@@ -648,3 +715,16 @@ export function handleSkewYChange  (valueY, skewX, setSkewY, canvas)  {
     setSkewY(value);
     skewSelectedObjects(skewX, value, canvas);
 };
+
+
+export function handleCornerRadius (canvas, value, setRadius) {
+    const activeObject = canvas.getActiveObject();
+    activeObject.set({
+        rx: value,
+        ry: value
+    });
+
+    setRadius(value);
+    canvas.requestRenderAll();
+}
+

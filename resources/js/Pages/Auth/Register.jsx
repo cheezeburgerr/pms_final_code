@@ -31,7 +31,10 @@ export default function Register() {
     return (
         <GuestLayout>
             <Head title="Register" />
-
+            <div className='mb-8 text-center w-full'>
+            <h1 className='text-2xl font-bold'>Register</h1>
+            <p>Please register your credentials.</p>
+            </div>
             <form onSubmit={submit}>
                 <div>
                     <InputLabel htmlFor="name" value="Name" />
@@ -95,6 +98,7 @@ export default function Register() {
                         className="mt-1 block w-full"
                         autoComplete="contact_number"
                         onChange={(e) => setData('contact_number', e.target.value)}
+                        maxLength={11}
                         required
                     />
 

@@ -134,8 +134,8 @@ export default function Profile({ auth, mustVerifyEmail, status, orders }) {
                             </div>
                             <div className='flex flex-col items-center w-full' onClick={() => viewOrders('Cancelled')}>
                                 <div className="relative cursor-pointer">
-                                    {countOrdersByStatus('Cancelled') !== 0 && (
-                                        <p className='absolute bg-teal-500 p-2 rounded-full left-3 -top-3 text-xs text-gray-100 py-1'>{countOrdersByStatus('Cancelled')}</p>
+                                {countOrdersByStatus(['Cancelled', 'Overdue']) !== 0 && (
+                                        <p className='absolute bg-teal-500 p-2 rounded-full left-3 -top-3 text-xs text-gray-100 py-1'>{countOrdersByStatus(['Cancelled', 'Overdue'])}</p>
                                     )}
                                     <IconX />
                                 </div>
@@ -145,17 +145,19 @@ export default function Profile({ auth, mustVerifyEmail, status, orders }) {
                     </div>
                     <div className="col-span-2 w-full p-8">
                         <div className="p-4 sm:p-8 bg-white dark:bg-zinc-900 rounded-lg">
-                            <h3 className='font-bold'>Your Orders</h3>
-                            <hr />
+                            <h3 className='font-bold font-Panchang'>Your Orders</h3>
+                            <hr className='dark:border-zinc-800'/>
                             <div>
                                 {filteredOrders.map((order, index) => (
                                     <div key={order.id}>
                                         <div className='flex justify-between mb-4 p-4 gap-x-4 items-center'>
                                             <div className="w-full">
                                                 <div className="flex gap-4 items-center">
-                                                    <p className='font-bold text-aqua text-lg'>{order.team_name}</p>
+                                                    <p className='font-bold text-lg'>{order.team_name}</p>
                                                     <p className={`${getStatusColor(order.production.status)} `}>{order.production.status}</p>{order.latestapproved && ( <>
-                                                        <p className="animate-pulse text-aqua">Waiting for Approval</p>
+                                                        {order.latestapproved.status != 'Approved' && (
+                                                            <p className="animate-pulse text-aqua">Waiting for Approval</p>
+                                                        )}
                                                     </>)}
                                                 </div>
                                                 <p className='text-sm'>{moment(order.due_date).format('MMMM Do YYYY')}</p>
@@ -174,6 +176,7 @@ export default function Profile({ auth, mustVerifyEmail, status, orders }) {
                                                 </div>
                                             </div>
                                         </div>
+                                        <hr className='dark:border-zinc-800' />
                                     </div>
                                 ))}
 

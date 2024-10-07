@@ -11,7 +11,7 @@ export default function SearchResult({ className = '', title, due_date, status, 
 
     return (
         <Link href={url}>
-            <div className="p-4 dark:bg-zinc-800 rounded-lg">
+            <div className="p-4 bg-gray-100 dark:bg-zinc-800 rounded-lg">
                 <div className="flex items-center gap-2">
                     <h1 className="font-bold">{title}</h1><p className={`${getStatusColor(status)}`}>{status}</p>
                 </div>

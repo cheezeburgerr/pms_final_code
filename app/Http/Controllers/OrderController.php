@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 class OrderController extends Controller
 {
@@ -38,10 +39,20 @@ class OrderController extends Controller
         // dd($request->image);
 
         $product_id = $request->product_id; 
-        $design = Designs::findOrFail($request->image);
+        $design = Designs::with('product')->findOrFail($request->image);
         // dd($image);
         $products = Products::with('categories.variation')->get();
         return Inertia::render('Order', ['products' => $products, 'product_id' => $product_id, 'image' => $design]);
+    }
+    public function design_order (Request $request) { 
+
+   
+
+        // $product_id = $request->product_id;
+    
+        // dd($request->data['image_data']);
+        $products = Products::with('categories.variation')->get();
+        return Inertia::render('Order', ['products' => $products, 'design' => $request->data['image_data']]);
     }
 
     public function edit ($id)
@@ -122,7 +133,6 @@ class OrderController extends Controller
     public function show ($id) {
 
         $order = Order::with('production', 'products.products', 'products.variations.category', 'products.variations.variations', 'lineups.products', 'files', 'customer', 'latestapproved', 'employees.employee')->find($id);
-
         if(!$order){
             return redirect()->route('dashboard');
         }
@@ -130,7 +140,24 @@ class OrderController extends Controller
         if(Auth::user()->id !== $order->customer->id){
             return redirect()->route('dashboard');
         }
+        
         return Inertia::render('Order/OrderDetails', ['order' => $order]);
+    }
+
+    public function set_priority($id) {
+        $order = Order::with('production')->find($id);
+        $order->production->priority = 'Yes';
+        $order->production->save();
+
+        return redirect()->back()->with('success', 'Order Prioritized.');
+    }
+
+    public function remove_priority($id) {
+        $order = Order::with('production')->find($id);
+        $order->production->priority = null;
+        $order->production->save();
+
+        return redirect()->back()->with('success', 'Order Priority Removed.');;
     }
     public function store(Request $request)
     {
@@ -152,11 +179,14 @@ class OrderController extends Controller
 
         // dd($request->all());
 
+        
+       
+
         $total_price = 0;
 
         $order = Order::create([
             'team_name' => $request['team_name'],
-            'due_date' => $request['due_date'],
+             'due_date' => $request['due_date'],
             'customer_id' => auth()->user()->id
         ]);
 
@@ -177,8 +207,31 @@ class OrderController extends Controller
             }
         }
 
+      
+        if($request->selectedDesign != null){
+            $image_data = $request->input('selectedDesign');
+            $image = str_replace('data:image/png;base64,', '', $image_data);
+            $image = str_replace(' ', '+', $image);
+            $image_content = base64_decode($image);
+    
+            $fileName = 'order_image_' . time() . '.png';
+            $filePath = 'order_images/' . $fileName;
+            
+        $filePath = 'images/orders/' . $fileName;
+        // Storage::disk('public')->put($filePath, $image_content);
+        file_put_contents($filePath, $image_content);
 
-        $sourcePath = storage_path('app/public/'.$request->selectedPic);
+            $order->files()->create([
+                'order_id' => $order->id,
+                'path' => $filePath,
+                'file_name' => $fileName,
+            ]);
+
+            // dd('true');
+        }
+
+        if($request->selectedPic != null){
+            $sourcePath = storage_path('app/public/'.$request->selectedPic);
         if (File::exists($sourcePath)) {
 
             $cleanedString = str_replace("designs/", "", $request->selectedPic);
@@ -194,6 +247,7 @@ class OrderController extends Controller
         } else {
 
             echo "Source image file not found";
+        }
         }
 
 
@@ -299,6 +353,9 @@ class OrderController extends Controller
 
     public function approval ($id) {
         $order = Order::with('production', 'latestapproved')->find($id);
+        if($order->latestapproved->status == 'Approved'){
+            return redirect()->route('orders.show', $id);
+        }
 
         return Inertia::render('Approval', ['order' => $order]);
     }
@@ -312,7 +369,7 @@ class OrderController extends Controller
         $order->production->note = 'Design Approved';
         $order->production->save();
 
-        return to_route('dashboard')->with('success', 'Design Approved');
+        return to_route('dashboard')->with('success', 'Design Successfully Approved.');
     }
 
     public function reject (Request $request) {
@@ -498,5 +555,42 @@ return $dompdf->stream('orders.pdf', ['Attachment' => false]);
         $lineupss = Lineup::where('order_id', $order->id)->get();
         dd($lineupss);
         return redirect()->route('orders.show', $order->id)->with('success', 'Lineup updated successfully.');
+    }
+
+    public function add_product($id) {
+        $order = Order::findOrFail($id);
+        $products = Products::with('categories.variation')->get();
+        return Inertia::render('Order/SelectedProducts/AddProduct', ['products' => $products, 'order' => $order]);
+    }
+
+    public function store_product(Request $request) {
+        foreach ($request['products'] as $product) {
+            $orderProduct = OrderProduct::create([
+                'order_id' => $request['order_id'],
+                'product_id' => $product['id'],
+                'subtotal' => $product['subtotal'],
+            ]);
+
+            // Process variations for this product
+            foreach ($request['variations'] as $categoryId => $variationId) {
+
+                $p = Products::with('categories')->find($product['id']);
+
+                foreach($p->categories as $cat){
+                    if($cat->id == $categoryId){
+                        OrderVariation::create([
+                            'order_id' => $request['order_id'],
+                            'product_id' => $orderProduct->id,
+                            'variation_id' => $variationId,
+                            'category_id' => $categoryId,
+                        ]);
+                    }
+                }
+
+            }
+            
+        }
+
+        return redirect()->route('orders.show', $request['order_id'])->with('success', 'New Product added.');
     }
 }

@@ -114,7 +114,11 @@ function PrintTable({ order }) {
             setShowModal(true);
         }
         else{
-            router.visit(route('employee.dashboard'))
+            router.visit(route('employee.dashboard'), {
+                onSuccess: page => {
+                  page.props.flash.success = "Order successfully printed.";
+                }
+              });
         }
     };
 

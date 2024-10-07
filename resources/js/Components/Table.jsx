@@ -22,7 +22,7 @@ function GlobalFilter({ globalFilter, setGlobalFilter }) {
     );
 }
 
-function Table({ columns, data }) {
+function Table({ columns, data, priority }) {
     const {
         getTableProps,
         getTableBodyProps,
@@ -56,7 +56,7 @@ function Table({ columns, data }) {
     return (
         <>
 
-            <div className="border dark:border-zinc-800 rounded-lg mb-4 dark:bg-zinc-900 bg-zinc-50 ">
+            <div className="border dark:border-zinc-800 rounded-lg mb-4 dark:bg-zinc-900 bg-gray-100 ">
                 <div className=" flex justify-end">
 
 
@@ -93,7 +93,7 @@ function Table({ columns, data }) {
                                         {row.cells.map((cell) => {
                                             return (
                                                 <td
-                                                    className="hover:dark:bg-zinc-800 hover:bg-zinc-300 px-4 p-4"
+                                                    className={`${priority && ''} hover:dark:bg-zinc-800 hover:bg-zinc-300 px-4 p-4`}
                                                     {...cell.getCellProps()}
                                                     key={cell.id}
                                                 >

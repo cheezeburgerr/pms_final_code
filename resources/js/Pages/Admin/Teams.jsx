@@ -1,6 +1,6 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { Head, Link, usePage, useForm } from '@inertiajs/react';
-import { IconCheck, IconCsv, IconEye, IconFilter, IconInfoCircle, IconPdf, IconPrinter } from '@tabler/icons-react';
+import { IconAlertTriangle, IconCheck, IconCsv, IconEye, IconFilter, IconInfoCircle, IconPdf, IconPrinter } from '@tabler/icons-react';
 import { Popover, Toast, Tooltip } from 'flowbite-react';
 import moment from 'moment';
 import PrimaryButton from '@/Components/PrimaryButton';
@@ -14,6 +14,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import Admin from '@/Layouts/AdminLayout';
 import { pdf } from '@react-pdf/renderer';
 import OrdersReport from '../Reports/OrdersReport';
+import SecondaryButton from '@/Components/SecondaryButton';
 
 const Filters = ({ showUserOrders, setShowUserOrders, filterStatus, setFilterStatus, startDate, setStartDate, endDate, setEndDate }) => {
     const handleStatusChange = (e) => {
@@ -180,6 +181,18 @@ export default function Teams({ auth, order, artists }) {
                                 ))}
                             </select>
                         )}
+                        {
+                            row.original.due_date && 
+                            (() => {
+                              const dueDate = new Date(row.original.due_date);
+                              const today = new Date();
+                              const threeDaysBeforeDueDate = new Date(dueDate);
+                              threeDaysBeforeDueDate.setDate(dueDate.getDate() - 3);
+                        
+                              return today >= threeDaysBeforeDueDate;
+                            })() 
+                             && (<IconAlertTriangle/>)
+                        }
                     </div>
                 ),
             },
@@ -259,8 +272,8 @@ export default function Teams({ auth, order, artists }) {
                     setEndDate={setEndDate}
                 />
                 <div className='space-x-2'>
-                    <PrimaryButton onClick={exportToCSV}><IconCsv /></PrimaryButton>
-                    <PrimaryButton onClick={handleOpenInNewTab}><IconPdf /></PrimaryButton>
+                    {/* <SecondaryButton onClick={exportToCSV}><IconCsv /></SecondaryButton> */}
+                    <SecondaryButton onClick={handleOpenInNewTab}><IconPdf /></SecondaryButton>
                 </div>
             </div>
             <div className="md:hidden">

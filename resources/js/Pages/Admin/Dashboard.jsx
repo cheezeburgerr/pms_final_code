@@ -7,11 +7,12 @@ import { Head, usePage, Link } from '@inertiajs/react';
 import { Alert, Progress } from 'flowbite-react';
 import { useState, useEffect } from 'react';
 import { Button, Tooltip, Badge } from 'flowbite-react';
-import { IconRefresh, IconEye, IconPrinter, IconCheck, IconInfoCircle } from '@tabler/icons-react';
+import { IconRefresh, IconEye, IconPrinter, IconCheck, IconInfoCircle, IconAlertTriangle } from '@tabler/icons-react';
 import Checkbox from '@/Components/Checkbox';
 import moment from 'moment';
 import Modal from '@/Components/Modal';
 import PrintModal from '@/Components/PrintModal';
+import TextInput from '@/Components/TextInput';
 
 
 export default function Dashboard({ auth, boxes, orders, printers }) {
@@ -73,7 +74,19 @@ const KanbanCard = ({ order, user }) => {
 
     return (
         <div
-            className={`text-gray-100 relative flex flex-col justify-between  my-6 rounded-lg shadow transition ${getStatusBgColor(order.production.status)} `}
+            className={`text-gray-100 relative flex flex-col justify-between  my-6 rounded-lg shadow transition ${
+                order.due_date && 
+                (() => {
+                  const dueDate = new Date(order.due_date);
+                  const today = new Date();
+                  const threeDaysBeforeDueDate = new Date(dueDate);
+                  threeDaysBeforeDueDate.setDate(dueDate.getDate() - 3);
+            
+                  return today >= threeDaysBeforeDueDate;
+                })() 
+                  ? 'bg-red-500' 
+                  : getStatusBgColor(order.production.status)
+              } `}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
 
@@ -93,6 +106,25 @@ const KanbanCard = ({ order, user }) => {
                                 </Badge>
                             </>
                         )}
+                        {
+                            order.due_date && 
+                            (() => {
+                              const dueDate = new Date(order.due_date);
+                              const today = new Date();
+                              const threeDaysBeforeDueDate = new Date(dueDate);
+                              threeDaysBeforeDueDate.setDate(dueDate.getDate() - 3);
+                        
+                              return today >= threeDaysBeforeDueDate;
+                            })() 
+                             && (
+                                <>
+                                      <Tooltip content="The order may be 3 days near the due date or is overdue.">
+                                    <IconAlertTriangle />
+                                    </Tooltip>
+                                </>
+                             )
+
+                        }
                         <Link href={route('admin.vieworder', order.id)}>
                             <Tooltip content='View'>
                                 <IconEye />
@@ -105,8 +137,15 @@ const KanbanCard = ({ order, user }) => {
 
 
                 </div>
+                {order.production.priority === "Yes" && (
+                    <>
+                        <div className="p-1 bg-amber-500 rounded-lg px-4 absolute left-5 -bottom-4 font-bold">
+                            <p className='flex gap-1'><span className='inline'><IconAlertTriangle/></span>Priority</p>
+                        </div>
+                    </>
+                )}
                 {isHovered && (
-                    <div className={`absolute right-4 -bottom-4 p-2 bg-zinc-900 dark:bg-zinc-100 rounded-full transition flex gap-3 z-10 `}>
+                    <div className={`absolute right-4 -bottom-4 p-2 bg-zinc-100 shadow-lg shadow-gray-400/50 dark:shadow-none dark:bg-zinc-100 rounded-full transition flex gap-3 z-10 `}>
 
                         <Link href={route('admin.production', order.id)} className="text-gray-500 hover:text-gray-100 dark:hover:text-gray-800 ">
                             <Tooltip content='Production Details' placement='bottom'>
@@ -152,28 +191,27 @@ const KanbanCard = ({ order, user }) => {
 
 // Define KanbanBoard component
 const KanbanBoard = ({ orders, user }) => {
-
-
     const webSocketChannel = `notifications_channel`;
-
-
 
     const [order, setOrder] = useState(orders);
     const [showUserOrders, setShowUserOrders] = useState(false);
+    const [searchTerms, setSearchTerms] = useState({
+        Designing: '',
+        Printing: '',
+        Sewing: '',
+        Done: ''
+    });
 
-    // Filter orders based on the toggle switch
+    // Filter orders based on the toggle switch and search term
     const filteredOrders = showUserOrders
         ? order.filter(order => order.employees.some(e => e.user_id === user.id))
         : order;
 
-
     const connectWebSocket = () => {
-        window.Echo.channel(webSocketChannel)
-            .listen('GotNotif', async (e) => {
-                // e.message
-                await fetchOrders();
-            });
-    }
+        window.Echo.channel(webSocketChannel).listen('GotNotif', async (e) => {
+            await fetchOrders();
+        });
+    };
 
     const fetchOrders = async () => {
         try {
@@ -186,22 +224,37 @@ const KanbanBoard = ({ orders, user }) => {
 
     useEffect(() => {
         connectWebSocket();
-        fetchOrders();
     }, []);
 
-    // Sort orders into corresponding status columns
+    // Sort orders into corresponding status columns and filter by search term
     const columns = {
-        'Designing': filteredOrders.filter(order => order.production.status === 'Designing'),
-        'Printing': filteredOrders.filter(order => order.production.status === 'Printing'),
+        'Designing': filteredOrders
+            .filter(order => order.production.status === 'Designing')
+            .filter(order => order.team_name.toLowerCase().includes(searchTerms.Designing.toLowerCase())), // Add search filter
+        'Printing': filteredOrders
+            .filter(order => ['Printing', 'Printed'].includes(order.production.status))
+            .filter(order => order.team_name.toLowerCase().includes(searchTerms.Printing.toLowerCase())), // Add search filter
+        'Sewing': filteredOrders
+            .filter(order => order.production.status === 'Sewing')
+            .filter(order => order.team_name.toLowerCase().includes(searchTerms.Sewing.toLowerCase())), // Add search filter
+        'Done': filteredOrders
+            .filter(order => ['Finished', 'Released'].includes(order.production.status))
+            .filter(order => order.team_name.toLowerCase().includes(searchTerms.Done.toLowerCase())), // Add search filter
+    };
 
-        'Sewing': filteredOrders.filter(order => order.production.status === 'Sewing'),
-        'Done': filteredOrders.filter(order => ['Finished', 'Released'].includes(order.production.status)),
+    const handleSearchChange = (status, value) => {
+        setSearchTerms(prev => ({
+            ...prev,
+            [status]: value
+        }));
     };
 
     return (
         <div className="md:h-[calc(100vh-148px)] flex flex-col">
             <div className="flex justify-end items-center mb-4">
-                <Button color={'transparent'} onClick={fetchOrders}><IconRefresh/></Button>
+                <Button color={'transparent'} onClick={fetchOrders}>
+                    <IconRefresh />
+                </Button>
                 <label className="flex items-center">
                     <Checkbox
                         type="checkbox"
@@ -212,15 +265,31 @@ const KanbanBoard = ({ orders, user }) => {
                     Your Teams
                 </label>
             </div>
-            <div className="flex-grow grid md:grid-cols-2 lg:grid-cols-4 gap-3 overflow-hidden ">
+
+            <div className="flex-grow grid md:grid-cols-2 lg:grid-cols-4 gap-3 overflow-hidden">
                 {/* Render Kanban columns */}
                 {Object.keys(columns).map(status => (
-                    <div key={status} className="flex flex-col relative overflow-hidden max-h-80 md:max-h-screen  bg-gray-50 dark:bg-zinc-900 p-4 rounded-lg border border-zinc-200 dark:border-zinc-800">
-                        <div className="flex justify-between">
-                            <h3 className="text-lg font-semibold mb-4">{status}</h3>
-                            {columns[status].length > 0 && <p className="opacity-50">{columns[status].length} Orders</p>}
+                    <div
+                        key={status}
+                        className="flex flex-col relative overflow-hidden max-h-80 md:max-h-screen bg-gray-50 dark:bg-zinc-900 p-4 rounded-lg border border-zinc-200 dark:border-zinc-800"
+                    >
+                        <div className="flex justify-between mb-4">
+                            <h3 className="text-lg font-semibold">{status}</h3>
+                            {columns[status].length > 0 && (
+                                <p className="opacity-50">{columns[status].length} Orders</p>
+                            )}
                         </div>
-                        <div className="flex-grow overflow-y-auto no-scrollbar rounded-md ">
+
+                        {/* Search input for each column */}
+                        <TextInput
+                            type="text"
+                            className="mb-2 p-2 w-full border rounded-md"
+                            placeholder={`Search ${status} orders`}
+                            value={searchTerms[status]} // Bind to state
+                            onChange={(e) => handleSearchChange(status, e.target.value)} // Update state
+                        />
+
+                        <div className="flex-grow overflow-y-auto no-scrollbar rounded-md">
                             {/* Render Kanban cards for orders in the current status */}
                             {columns[status].length > 0 ? (
                                 columns[status].map(order => (
@@ -236,3 +305,4 @@ const KanbanBoard = ({ orders, user }) => {
         </div>
     );
 };
+

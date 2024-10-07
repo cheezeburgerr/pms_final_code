@@ -78,7 +78,7 @@ export default function Employees({ auth, employees, departments, printers }) {
         e.preventDefault();
         console.log(data);
 
-        post(route('add.employee'), data)
+        post(route('employees.store'), data)
 
         reset();
         // Add logic to handle adding employee
@@ -86,20 +86,12 @@ export default function Employees({ auth, employees, departments, printers }) {
     };
 
     return (
-        <AdminLayout user={auth.admin} header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Dashboard</h2>}>
+        <AdminLayout alert={props} user={auth.admin} header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Dashboard</h2>}>
             <Head title="Employees" />
 
             <div className="flex justify-between">
                 <h1 className="font-bold text-2xl mb-4">Employees</h1>
-                {props.flash.success && (
-                    <>
-
-                        <Alert color="success" className='bg-teal-500 text-gray-100'>
-                            <span>{props.flash.success}</span>
-                        </Alert>
-
-                    </>
-                )}
+                
 
             </div>
             <div className=''>

@@ -24,8 +24,17 @@ class EmployeeController extends Controller
 {
     //
 
-    public function profile(User $user){
+    public function profile($id){
+        $user = User::with('duties.orders.production')->find($id);
+        // dd($user);
+
         return Inertia::render("Employee/Profile/Index", ['employee' => $user]);
+    }
+
+    public function edit($id) {
+
+        $user = User::with('department')->find($id);
+        return Inertia::render('Employee/Profile/Edit', ['user' => $user]);
     }
     public function login()
     {
@@ -51,10 +60,12 @@ class EmployeeController extends Controller
                 return back();
             }
 
-            return redirect()->intended('/employee/dashboard');
+            return redirect('/employee/dashboard');
         } else {
+
+            
             Session::flash('error-message', 'Invalid Email or Password');
-            return back();
+            return back()->withErrors(['email' => 'Invalid Email or Password']);;
         }
     }
 
@@ -105,10 +116,11 @@ class EmployeeController extends Controller
 
     public function teams()
     {
+
         $order = Order::with('production', 'employees.employee', 'products.products')
         ->withCount('products', 'lineups')
         ->whereHas('production', function ($query) {
-            $query->where('status', '!=', 'Pending');
+            $query->whereNotIn('status', ['Pending', 'Overdue']);
         })->get();
 
 
@@ -156,6 +168,8 @@ class EmployeeController extends Controller
     public function production_details ($id) {
 
         $order = Order::with('production.printer', 'products.products', 'products.variations.category', 'products.variations.variations', 'lineups.products', 'files', 'customer', 'latestapproved', 'approved', 'errors')->withCount('products', 'lineups', 'errors')->find($id);
+
+        // dd($order)
         return Inertia::render('Employee/ProductionDetails', ['order' => $order]);
     }
 
@@ -184,6 +198,7 @@ class EmployeeController extends Controller
     $requestData = $request->input('records');
 
     $count = 0;
+    $order = null;
     foreach ($requestData as $recordData) {
 
         $record = Lineup::find($recordData['id']);
@@ -194,12 +209,28 @@ class EmployeeController extends Controller
             $record->save();
 
             $count++;
+            $order = $record->order_id;
         }
     }
 
+    $printers = ProductionEmployee::where('order_id', $order)->where('employee_role', 'Artist')->get();
+
+    // dd($printers);
+        foreach($printers as $c){
+            $notif = Notification::create([
+                'user_id' => $c->user_id,
+                'title' => 'Lineup Errors Found',
+                'message' => $count.' records found with errors.',
+                'url' => '/employee/production-details/'.$order
+            ]);
+
+            SendNotif::dispatch($notif);
+        }
+    SendNotif::dispatch($notif);
 
 
-    return to_route('employee.dashboard');
+
+    return to_route('employee.dashboard')->with('success', 'Errors Returned.');
 }
 
 
@@ -294,7 +325,13 @@ class EmployeeController extends Controller
     public function reprint ($id)
     {
 
-        $order = Order::with('lineups', 'production')->find($id);
+        $order = Order::with(['lineups' => function ($query) {
+            $query->whereIn('status', ['Error', 'Reprint']);
+        }, 'production'])
+        ->whereHas('lineups', function ($query) {
+            $query->whereIn('status', ['Error', 'Reprint']);
+        })
+        ->find($id);
 
         return Inertia::render('Employee/Reprint', ['order' => $order]);
     }
@@ -380,15 +417,34 @@ class EmployeeController extends Controller
 
         $lineups = Lineup::where('order_id', $id)->where('status', 'Error')->get();
 
+        $order = null;
+
+        $count = 0;
         foreach($lineups as $lineup){
             $lineup->status = 'Reprint';
-            $lineup->note = null;
+            $lineup->note = 'Reprint';
+            $order = $lineup->order_id;
             $lineup->save();
+            $count++;
         }
 
         SendErrors::dispatch('Error alert');
 
-        return redirect()->back();
+        // $printers = ProductionEmployee::where('order_id', $order)->where('employee_role', 'Printer')->get();
+$printers = User::where('dept_id', 3)->get();
+    // dd($printers);
+        foreach($printers as $c){
+            $notif = Notification::create([
+                'user_id' => $c->id,
+                'title' => 'Reprint Lineup',
+                'message' => $count.' records to reprint.',
+                'url' => '/employee/production-details/'.$order
+            ]);
+
+            SendNotif::dispatch($notif);
+        }
+
+        return redirect()->back()->with('success', 'Errors ready to reprint.');
     }
 
 

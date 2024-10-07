@@ -17,11 +17,17 @@ use App\Http\Controllers\OrderProductController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductModelController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SizeChartController;
 use App\Models\Designs;
 use App\Models\ModelDesigns;
+use App\Models\Notification;
+use App\Models\ProductionDetails;
 use App\Models\Products;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -47,6 +53,7 @@ Route::post('/broadcasting/auth', function () {
     return Auth::user();
  });
 
+ Route::get('designinfo/{id}', [DesignsController::class, 'show'])->name('design.info');
 
  
 //  Route::middleware(['auth:sanctum', 'verified'])->get('/chat/{user}', [ChatRoomController::class, 'index'])->name('chat');
@@ -57,6 +64,32 @@ Route::prefix('employee')->group(function () {
     Route::post('login', [EmployeeController::class, 'login_functionality'])->name('login.functionality');
 
     Route::middleware('employee')->group(function () {
+
+        Route::post('proceed/{id}', function (Request $request, $id) {
+            $order = ProductionDetails::where('order_id', $id)->first();
+        
+            $order->status = 'Printing';
+            $order->printer_id = $request->input('printer');
+            $order->note = 'Ready To Print';
+            $order->start_production = Carbon::now();
+            $order->save();
+        
+            $operator = User::where('dept_id', 3)->get();
+
+
+            foreach($operator as  $o){
+                $notif = Notification::create([
+                    'user_id' => $o->id,
+                    'title' => 'Order Ready to Print',
+                    'message' => 'Order "'.$order->team_name.'" is ready for printing. Click here to print.',
+                    'url' => 'employee/print/'.$order->order_id
+                ]);
+            }
+        
+        
+            return to_route('employee.dashboard')->with('success', 'Order proceeded to production.');;
+        })->name('print.submit');
+
         Route::get('/dashboard', [EmployeeController::class, 'dashboard'])->name('employee.dashboard');
         Route::post('/logout', [EmployeeController::class, 'logout'])->name('employee.logout');
         Route::get('/view-order/{id}', [EmployeeController::class, 'view_order'])->name('employee.vieworder');
@@ -85,15 +118,25 @@ Route::prefix('employee')->group(function () {
         Route::resource('models', ProductModelController::class);
         Route::resource('model_designs', ModelDesignsController::class);
         Route::resource('designs', DesignsController::class);
-
+       
+       
+        
         Route::get('printers', [EquipmentController::class, 'index'])->name('printers');
         Route::post('/printer_update/{id}', [EquipmentController::class, 'updateStatus'])->name('printer_update');
-
+        Route::post('/set-priority/{id}', [OrderController::class, 'set_priority'])->name('employee.priority');
+        Route::post('/remove-priority/{id}', [OrderController::class, 'remove_priority'])->name('employee.removeprio');
         Route::get('/profile/{id}', [EmployeeController::class,'profile'])->name('employee.profile');
+        Route::get('/profile/{id}/edit', [EmployeeController::class,'edit'])->name('edit.profile');
         Route::get('/orders/export-pdf', [OrderController::class, 'exportPdf'])->name('orders.exportPdf');
     });
 });
 
+Route::post('/size-chart/add', [SizeChartController::class, 'addProduct'])->name('size.chart.add');
+Route::post('/size-chart/update/{id}', [SizeChartController::class, 'updateProduct'])->name('size.chart.update');
+Route::get('size-chart', [SizeChartController::class, 'show'])->name('size.show');
+Route::get('/test', function () {
+    return 'Test page is working';
+});
 
 Route::prefix('admin')->group(function () {
     Route::get('login', [AdminController::class, 'login'])->name('admin.login');
@@ -120,7 +163,11 @@ Route::prefix('admin')->group(function () {
         Route::get('/sales', [AnalyticsController::class, 'counts'])->name('sales');
         Route::get('/production', [AnalyticsController::class, 'production_chart'])->name('production');
         Route::resource('/products', ProductController::class);
+        
+        Route::get('/products/{name}/size-chart', [SizeChartController::class, 'show'])->name('products.sizeChart');
+        Route::put('/products/{name}/size-chart', [SizeChartController::class, 'update'])->name('products.sizeChart.update');
 
+        Route::resource('size-chart', SizeChartController::class);
         // Route::get('/orders/export-pdf', [OrderController::class, 'exportPdf'])->name('orders.exportPdf');
     });
 });
@@ -142,8 +189,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/return/{id}', [OrderController::class, 'return'])->name('orders.return');
     Route::put('/return-records', [OrderController::class, 'return_records'])->name('returnrecords');
     Route::resource('orders', OrderController::class);
-    Route::resource('designs', DesignsController::class);
+    
     Route::post('order', [OrderController::class,'order'])->name('order');
+    Route::get('add-product/{id}', [OrderController::class,'add_product'])->name('add.product');
+    Route::post('add-product', [OrderController::class,'store_product'])->name('store.product');
+    Route::post('design_order', [OrderController::class,'design_order'])->name('design.order');
     Route::put('/order-update/{id}', [OrderController::class, 'update'])->name('order.update');
     Route::resource('order-product', OrderProductController::class);
     Route::get('approval/{id}', [OrderController::class, 'approval'])->name('orders.approval');

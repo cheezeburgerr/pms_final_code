@@ -4,21 +4,22 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import EmployeeLayout from '@/Layouts/EmployeeLayout';
 import { Head, usePage } from '@inertiajs/react';
-import { Progress } from 'flowbite-react';
+import { Progress, Toast } from 'flowbite-react';
 import PrintQueue from '@/Components/PrintQueue';
 
 
 export default function Dashboard({ auth, boxes, orders, printers, errors }) {
 
-
+    const { props } = usePage();
 
     // Determine which component to render based on department_id
     const componentToRender = [1, 2, 4].includes(auth.employee.dept_id)
-  ? <KanbanBoard orders={orders} printers={printers} user={auth.employee} />
-  : auth.employee.dept_id === 3
-    ? <PrintQueue orders={orders} printers={printers} errors={errors}/>
-    : <div>Department not supported</div>;
+        ? <KanbanBoard orders={orders} printers={printers} user={auth.employee} />
+        : auth.employee.dept_id === 3
+            ? <PrintQueue orders={orders} printers={printers} errors={errors} />
+            : <div>Department not supported</div>;
 
+    console.log(props);
 
     return (
         <EmployeeLayout
@@ -29,11 +30,25 @@ export default function Dashboard({ auth, boxes, orders, printers, errors }) {
 
             <Head title="Dashboard" />
 
+            {props.flash.success && (
+                <>
+                    <div
+                        className="fixed bottom-10 left-10 z-50 animate-slideUp transition-transform transform 
+      animate-[slide-up_0.5s_ease-out_forwards]"
+                    >
+                        <Toast>
+                            <span>{props.flash.success}</span>
+                            <Toast.Toggle />
+                        </Toast>
+                    </div>
+                </>
+            )}
 
-           <h1 className='text-2xl font-bold mb-2 '>Hello {auth.employee.name}!</h1>
-           <div className="dark:text-gray-100 relative">
 
-           {componentToRender}
+            <h1 className='text-2xl font-bold mb-2 '>Hello {auth.employee.name}!</h1>
+            <div className="dark:text-gray-100 relative">
+
+                {componentToRender}
             </div>
 
 

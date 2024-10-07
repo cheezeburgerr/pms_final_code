@@ -3,8 +3,8 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { IconEdit } from '@tabler/icons-react';
-import { Progress } from 'flowbite-react';
+import { IconChartArcs, IconEdit, IconTable } from '@tabler/icons-react';
+import { Progress, Tooltip } from 'flowbite-react';
 import { Card } from 'flowbite-react';
 
 export default function Dashboard({ auth, boxes, order, production, products }) {
@@ -53,7 +53,12 @@ export default function Dashboard({ auth, boxes, order, production, products }) 
                                         <p className='text-sm'>{product.product_price}.00</p>
                                     </div>
 
+                                    <div className="flex gap-1">
+                                    {/* <Tooltip content='Size Chart'>
+                                    <Link href={route('products.sizeChart', product.id)} className='flex gap-2 dark:text-white'> <IconTable  /></Link>
+                                    </Tooltip> */}
                                     <Link href={route('products.edit', product.id)} className='flex gap-2 dark:text-white'> <IconEdit color='aqua' /></Link>
+                                    </div>
                                 </div>
 
 

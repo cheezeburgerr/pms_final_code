@@ -1,25 +1,68 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { Link } from '@inertiajs/react';
 import Dropdown from '@/Components/Dropdown';
 import DarkModeToggle from '@/Components/DarkModeToggle';
-import { IconLayoutBoard, IconShirt, IconPackage, IconUserCancel, IconCheck, IconMenu, IconMenu2, IconBell, IconMessage2, IconUser, IconCoin, IconGraph } from '@tabler/icons-react';
-import { Button, Popover } from 'flowbite-react';
+import { IconLayoutBoard, IconShirt, IconPackage, IconUserCancel, IconCheck, IconMenu, IconMenu2, IconBell, IconMessage2, IconUser, IconCoin, IconGraph, IconTable } from '@tabler/icons-react';
+import { Alert, Button, Popover, Toast } from 'flowbite-react';
 import NotificationBox from '@/Components/Notification/NotificationBox';
 import SearchBox from '@/Components/SearchBar/SearchBox';
 
 const SidebarContext = createContext();
 
-export default function Admin({ user, children }) {
+export default function Admin({ user, children, alert }) {
     const [isDrawerOpen, setIsDrawerOpen] = useState(true);
+
+    const drawerRef = useRef(null);  // Reference to the drawer
+
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth < 768) {
+                setIsDrawerOpen(false);
+            } else {
+                setIsDrawerOpen(true);
+            }
+        };
+
+        handleResize();  // Run once on mount
+        window.addEventListener('resize', handleResize);
+
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (drawerRef.current && !drawerRef.current.contains(event.target)) {
+                setIsDrawerOpen(false);
+            }
+        };
+
+        if (window.innerWidth < 768) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isDrawerOpen]);
 
     return (
         <div className="dark:text-white flex">
-            <aside className={`text-sm z-50 transition-all duration-300 ${isDrawerOpen ? '-translate-x-0 w-60' : '-translate-x-full md:-translate-x-0 w-28'}  fixed md:static top-0`}>
-                <div id="drawer-sidebar" className={`md:m-4 mr-0 rounded-lg sticky bottom-4 top-4 z-50 p-0.5 bg-gray-50 dark:bg-zinc-900 border dark:border-zinc-800 h-screen md:h-[calc(100vh-35px)] transition-all`}>
+            {alert && (
+                <>
+                    {alert.flash.success && (
+                   <div className="fixed bottom-10 left-10 z-50">
+                   <Toast>
+                       <span>{alert.flash.success}</span>
+                       <Toast.Toggle />
+                   </Toast>
+               </div>
+                )}
+                </>
+            )}
+            <aside className={`text-sm z-40 transition-all duration-300 ${isDrawerOpen ? '-translate-x-0 w-60' : '-translate-x-full md:-translate-x-0 w-28'}  fixed md:static top-0`}>
+                <div id="drawer-sidebar" className={`md:m-4 mr-0 rounded-lg sticky bottom-4 top-4 z-40 p-0.5 bg-zinc-950 dark:bg-zinc-900 border dark:border-zinc-800 h-screen md:h-[calc(100vh-35px)] transition-all`}>
                     <div className="mb-4 h-18">
                         <h1 className="font-bold text-lg flex items-center gap-2 dark:text-aqua px-4 py-4">
                             <img src='/images/TJM_LOGO.png' className="transition-all h-6" />
-                            {isDrawerOpen && 'Sportswear'}
+                            <p className="text-gray-100">{isDrawerOpen && 'Sportswear'}</p>
                         </h1>
                     </div>
                     <div className="bg-zinc-100 dark:bg-zinc-900 p-2 rounded-lg flex items-center md:hidden">
@@ -31,8 +74,15 @@ export default function Admin({ user, children }) {
                     <ul className={`${isDrawerOpen ?'' : ''} p-4 transition-all`}>
                         <SidebarContext.Provider value={{ isDrawerOpen }}>
                             <SidebarItem href={route('admin.dashboard')} active={route().current('admin.dashboard')} icon={<IconLayoutBoard />} text='Board' />
-                            <SidebarItem href={route('products.index')} active={route().current('products.index')} icon={<IconShirt />} text='Products' />
                             <SidebarItem href={route('admin.teams')} active={route().current('admin.teams')} icon={<IconPackage />} text='Orders' />
+                            <div>
+                            <div className="ms-2 my-4">
+                                <p className='opacity-50'>Products</p>
+                            <SidebarItem href={route('products.index')} active={route().current('products.index')} icon={<IconShirt />} text='Products' />
+                            <SidebarItem href={route('size-chart.index')} active={route().current('size-chart.index')} icon={<IconTable />} text='Size Charts' />
+                            </div>
+                            </div>
+                            
                             <SidebarItem href={route('employees.index')} active={route().current('employees.index')} icon={<IconUser />} text='Employees' />
                             <SidebarItem href={route('sales')} active={route().current('sales')} icon={<IconCoin />} text='Sales' />
                             <SidebarItem href={route('production')} active={route().current('production')} icon={<IconGraph />} text='Production' />
@@ -91,6 +141,7 @@ export default function Admin({ user, children }) {
                     {children}
                 </div>
             </main>
+            
         </div>
     );
 }
@@ -105,8 +156,8 @@ export function SidebarItem({ active = false, className = '', icon, text, ...pro
                 className={
                     'relative w-full p-2 hover:bg-aqua/10 rounded-lg transition duration-150 ease-in-out focus:outline-none items-center flex gap-2' +
                     (active
-                        ? 'rounded-lg bg-aqua/50 text-zinc-700 font-bold dark:text-zinc-100 focus:border-teal-700'
-                        : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700 focus:text-zinc-700 dark:focus:text-zinc-300 focus:border-zinc-300 dark:focus:border-zinc-700 ') +
+                        ? 'rounded-lg bg-aqua/50 text-zinc-100 font-bold dark:text-zinc-100 focus:border-teal-700'
+                        : 'border-transparent text-zinc-400 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700 focus:text-zinc-700 dark:focus:text-zinc-300 focus:border-zinc-300 dark:focus:border-zinc-700 ') +
                     className
                 }
             >

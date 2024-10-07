@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import PrimaryButton from '@/Components/PrimaryButton';
-import { Card } from 'flowbite-react';
+import { Card, Tooltip } from 'flowbite-react';
 import moment from 'moment';
-import { IconEdit, IconPackage, IconPencil, IconPhoto, IconReport, IconTag, IconUser } from '@tabler/icons-react';
+import { IconEdit, IconPackage, IconPencil, IconPhoto, IconPlus, IconReport, IconTag, IconUser } from '@tabler/icons-react';
 import DangerButton from '@/Components/DangerButton';
 import Modal from '@/Components/Modal';
 import SecondaryButton from '@/Components/SecondaryButton';
@@ -134,7 +134,8 @@ export default function OrderDetails({ auth, products, order }) {
                     <h1 className="font-bold text-3xl mb-4">Order Details</h1>
                     {order.latestapproved && (
                         <>
-                            <Card className='animate-pulse bg-gradient-to-r from-aqua to-purple-500 dark:border-zinc-800 mb-4'>
+                            {order.latestapproved.status != 'Approved' && (
+                                <Card className='animate-pulse bg-gradient-to-r from-aqua to-purple-500 dark:border-zinc-800 mb-4'>
                                 <div className="w-full flex gap-4 justify-between">
                                     <div>
                                         <p className="font-extrabold text-xl text-zinc-900">Waiting for Approval</p>
@@ -149,8 +150,20 @@ export default function OrderDetails({ auth, products, order }) {
                                     </div>
                                 </div>
                             </Card>
+                            )}
                         </>
                     )}
+                    {order.production.status == 'Overdue' && (
+                        <>
+                            <Card className='bg-red-500 dark:bg-red-500 dark:border-zinc-800 mb-4'>
+                                <div className="w-full  justify-between">
+                                    <p className='font-extrabold text-xl'>Order Overdue</p>
+                                    <p>Order production did not finished in due time. Sorry for the inconvenience. Please contact our customer service for other concerns.</p>
+                                </div>
+                            </Card>
+                        </>
+                    )}
+                   
                     <Card className='dark:bg-zinc-900 dark:border-zinc-800 shadow-none'>
                         <div className="flex justify-between">
                             <div>
@@ -203,7 +216,7 @@ export default function OrderDetails({ auth, products, order }) {
                                 )}
                             </div>
                         </div>
-
+<hr className='dark:border-zinc-800' />
                         <div className="md:grid space-y-4 md:space-y-0 grid-cols-2 grid-rows-2 p-4 text-sm gap-8">
                             <div className='flex gap-4 items-start'>
                                 <div className="rounded-full bg-zinc-200 dark:bg-zinc-900 p-2">
@@ -222,18 +235,32 @@ export default function OrderDetails({ auth, products, order }) {
                                 </div>
                                 <div>
                                     <h className="font-bold text-md mb-4">Design</h>
+                                    <div className='flex gap-4'>
+                                    {order.latestapproved && (
+                                        <>
+                                        {order.latestapproved.status == 'Approved' && (
+                                            <div className='relative'>
+                                                <Tooltip content="Approved">
+                                                <div className="absolute -left-1 -bottom-1 p-2 bg-green-500 rounded-full"></div>
+                                                </Tooltip>
+                                                <img src={`/images/orders/approvals/${order.latestapproved.image_name}`} alt={order.latestapproved.image_name} className='h-20 rounded-lg' />
+                                            </div>
+                                        )}
+                                        </>
+                                    )}
                                     {order.files.map(image => (
                                         <>
                                             <img
                                                 key={image.file_name}
                                                 src={`/images/orders/${image.file_name}`}
                                                 alt={image.file_name}
-                                                className='h-20 rounded-md cursor-pointer'
+                                                className='h-20 rounded-lg cursor-pointer'
                                                 onClick={() => handleImageClick(`/images/orders/${image.file_name}`)}
                                             />
 
                                         </>
                                     ))}
+                                    </div>
                                 </div>
                             </div>
 
@@ -255,13 +282,20 @@ export default function OrderDetails({ auth, products, order }) {
                                 <div>
                                     <h className="font-bold text-md">Order Price</h>
                                     <p><span className="opacity-50 mr-2">Total Price</span> {order.total_price.toFixed(2)}</p>
-                                    <p><span className="opacity-50 mr-2">Downpayment</span> {order.downpayment ? <>{order.downpayment}</> : <><Link href={route('orders.downpayment', order.id)}><PrimaryButton>Pay</PrimaryButton></Link></>}</p>
+                                    <p><span className="opacity-50 mr-2">Downpayment</span> {order.downpayment ? <>{order.downpayment}</> : <><Link href={route('orders.downpayment', order.id)}><PrimaryButton disabled={order.production.status == 'Overdue'}>Pay</PrimaryButton></Link></>}</p>
 
                                 </div>
                             </div>
 
                         </div>
+                        <hr className='dark:border-zinc-800' />
+                        <div className="flex justify-between items-center">
                         <h1 className=" font-bold">Products</h1>
+                        
+                        <Link href={route('add.product', order.id)}>
+                        <IconPlus/>
+                        </Link>
+                        </div>
                         <div className="">
                             {order.products.map(product => (
                                 <>
@@ -302,6 +336,7 @@ export default function OrderDetails({ auth, products, order }) {
                                 </>
                             ))}
                         </div>
+                        <hr className='dark:border-zinc-800'/>
                         <div className="flex justify-between">
                             <h1 className=" font-bold">Lineup</h1>
                             <Link href={route('lineup.edit', order.id)}>

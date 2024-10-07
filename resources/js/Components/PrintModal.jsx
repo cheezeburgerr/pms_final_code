@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from '@inertiajs/react';
 import PrimaryButton from './PrimaryButton';
 
-const PrintModal = ({ orderId, onSubmit }) => {
+const PrintModal = ({ orderId, onSubmit, showPrintModal, setShowPrintModal }) => {
     const { data, setData, post, processing, errors } = useForm({
         printer: '', // State to hold selected printer
     });
@@ -34,6 +34,7 @@ const PrintModal = ({ orderId, onSubmit }) => {
             onSuccess: onSubmit, // Handle success callback
             onError: (errors) => console.log(errors), // Handle error callback
         });
+        setShowPrintModal(false)
     };
 
     return (

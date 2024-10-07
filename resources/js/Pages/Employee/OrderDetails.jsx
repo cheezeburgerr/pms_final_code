@@ -41,15 +41,17 @@ export default function OrderDetails({ auth, products, order }) {
             <Head title="Order" />
 
             <div className="">
-                <div className=" mx-auto sm:px-6 lg:px-8">
+                <div className=" mx-auto">
                     <BackButton/>
                     <h1 className="font-bold text-3xl mb-4">Order Details</h1>
                     <Card className='dark:bg-zinc-900 dark:border-zinc-800'>
                         <div className="flex justify-between">
                             <div>
                                 <h3 className='font-bold'>Order #{order.id}</h3>
+                                <div className="flex gap-4">
                                 <p className='text-sm'>{moment(order.due_date).format("MMMM Do, YYYY")}</p>
                                 <p className='text-sm bg-aqua px-2 rounded-full text-zinc-900 font-bold text-center'>{order.production.status}</p>
+                                </div>
                             </div>
                             <IconReport onClick={handleOpenInNewTab} className='cursor-pointer'/>
                         </div>
@@ -106,6 +108,7 @@ export default function OrderDetails({ auth, products, order }) {
                                 </div>
                             </div>
                         </div>
+                        <hr className="opacity-50" />
                         <h1 className=" font-bold">Products</h1>
                         <div className="">
                             {order.products.map(product => (
@@ -133,6 +136,7 @@ export default function OrderDetails({ auth, products, order }) {
                                 </div>
                             ))}
                         </div>
+                        <hr className="opacity-50" />
                         <h1 className=" font-bold">Lineup</h1>
                         <div className='p-2'>
                             <table className='table-auto w-full text-center'>

@@ -6,26 +6,19 @@ use App\Http\Controllers\APIController;
 use App\Http\Controllers\ChatRoomController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\SizeChartController;
 use App\Models\Equipment;
+use App\Models\Notification;
 use App\Models\ProductionDetails;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use carbon\Carbon;
 use Illuminate\Support\Facades\Broadcast;
 
-Route::get('printers', function () {return Equipment::where('type', 'Printer')->where('status', 'Working')->get();})->name('get.printers');
+Route::get('printers', function () {return Equipment::where('type', 'Printer')->where('status', 'online')->get();})->name('get.printers');
 
-Route::post('proceed/{id}', function (Request $request, $id) {
-    $order = ProductionDetails::where('order_id', $id)->first();
 
-    $order->status = 'Printing';
-    $order->printer_id = $request->input('printer');
-    $order->note = 'Ready To Print';
-    $order->start_production = Carbon::now();
-    $order->save();
-
-    return redirect()->back();
-})->name('print.submit');
 
 
 Route::get('users', [OrderController::class, 'order']);
@@ -73,4 +66,4 @@ Route::get('/order-chat/{order}', [ChatRoomController::class, 'order']);
         Route::get('/sales', [AnalyticsController::class, 'sales']);
         Route::get('/production', [AnalyticsController::class, 'production']);
 
-
+Route::get('/size-charts', [SizeChartController::class, 'getSizeCharts']);

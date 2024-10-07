@@ -23,6 +23,7 @@ class HandleInertiaRequests extends Middleware
         return parent::version($request);
     }
 
+    
     /**
      * Define the props that are shared by default.
      *
@@ -32,7 +33,7 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-
+            'errors' => fn () => $request->session()->get('errors'),
             'flash' => function () use ($request) {
                 return [
                     'success' => $request->session()->get('success'),

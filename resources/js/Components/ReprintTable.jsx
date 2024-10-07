@@ -64,7 +64,7 @@ function ReprintTable({ order }) {
         const updatedLineup = [...lineup];
         const currentItem = updatedLineup[index];
 
-        currentItem.status = currentItem.status === 'Printed' ? null : 'Printed';
+        currentItem.status = currentItem.status === 'Printed' ? 'Reprint' : 'Printed';
 
         setLineup(updatedLineup);
 
@@ -101,7 +101,11 @@ function ReprintTable({ order }) {
         setShowModal(true);
         }
         else{
-            router.put(route('employee.returnrecords'), data);
+            router.visit(route('employee.dashboard'), {
+                onSuccess: page => {
+                  page.props.flash.success = "Error successfully reprinted.";
+                }
+              });
         }
     };
 

@@ -22,7 +22,7 @@ return new class extends Migration
             $table->double('sewing_progress')->default(0);
             $table->double('downtime')->default(0);
             $table->foreignId('printer_id')->default(0);
-            $table->int('priority')->nullable();
+            $table->string('priority')->nullable();
             $table->timestamps();
         });
     }

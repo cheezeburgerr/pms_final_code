@@ -17,7 +17,7 @@ const useCanvasState = () => {
     const [selectedLogo, setSelectedLogo] = useState(null);
     const [selectedColor, setSelectedColor] = useState('#ffffff');
     const [selectedFont, setSelectedFont] = useState('Bebas');
-
+    const [rotationAngle, setRotationAngle] = useState(null);
     return {
         svgObject, setSvgObject,
         showColorPicker, setShowColorPicker,
@@ -33,7 +33,8 @@ const useCanvasState = () => {
         skewY, setSkewY,
         selectedLogo, setSelectedLogo,
         selectedColor, setSelectedColor,
-        selectedFont, setSelectedFont
+        selectedFont, setSelectedFont,
+        rotationAngle, setRotationAngle
     };
 };
 

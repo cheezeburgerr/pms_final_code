@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -13,6 +14,16 @@ class Order extends Model
     // protected $casts = [
     //     'files' => 'array',
     // ];
+
+    // protected static function booted()
+    // {
+    //     static::saving(function ($order) {
+    //         // Check if the due date is 3 days away or past
+    //         if (Carbon::parse($order->due_date)->lessThanOrEqualTo(Carbon::now()->addDays(3))) {
+    //             $order->status = 'Overdue'; // Set the status
+    //         }
+    //     });
+    // }
 
     public function products()
     {

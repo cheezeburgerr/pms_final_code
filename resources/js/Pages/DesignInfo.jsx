@@ -49,7 +49,7 @@ export default function DesignInfo({ design, auth }) {
             <div className="py-12 dark:text-gray-100">
                 <div className=" max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="flex items-center gap-4">
-                        <img src={ `/storage/${design.image}`} alt="" className='w-1/2 h-80 object-cover rounded-lg' />
+                        <img src={ `/storage/designs/${design.image}`} alt="" className='w-1/2 h-80 object-cover rounded-lg' />
                         <div className='w-1/2'>
                             <h1 className='text-xl font-bold w-full '>{design.name}</h1>
                             <p className="font-bold text-aqua mb-4">{design.product.product_price.toFixed(2)}</p>

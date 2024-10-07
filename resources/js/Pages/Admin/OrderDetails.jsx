@@ -59,6 +59,7 @@ export default function OrderDetails({ auth, products, order }) {
                                 </div>
                                 <div>
                                     <h className="font-bold text-md mb-4">Design</h>
+                                   
                                     {order.files.map(image => (
                                         <img
                                             key={image.file_name}

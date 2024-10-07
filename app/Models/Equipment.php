@@ -14,4 +14,5 @@ class Equipment extends Model
     public function orders () {
         return $this->hasMany(ProductionDetails::class, 'printer_id');
     }
+    
 }

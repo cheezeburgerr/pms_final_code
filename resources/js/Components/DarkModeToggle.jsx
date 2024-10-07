@@ -22,7 +22,14 @@ const DarkModeToggle = () => {
 
   return (
     <button onClick={toggleDarkMode}>
-      {darkMode ? <IconSun color='white'/> : <IconMoon color='gray'/>}
+      <div className="flex">
+        <div className={`p-1 rounded-tl-lg rounded-bl-lg ${!darkMode ? 'bg-gray-200' : 'bg-zinc-500 dark:bg-zinc-900'} transition-all`}>
+          <IconSun />
+        </div>
+        <div className={`p-1 rounded-tr-lg rounded-br-lg ${darkMode ? 'bg-gray-200 text-zinc-900' : 'bg-zinc-500 dark:bg-zinc-900'} transition-all`}>
+          <IconMoon />
+        </div>
+      </div>
     </button>
   );
 };

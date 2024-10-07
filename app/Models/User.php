@@ -25,7 +25,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'user_type',
         'user_id',
         'image',
-        'is_supervisor'
+        'is_supervisor',
+        'dept_id'
     ];
 
     // protected $primaryKey = 'user_id';
@@ -52,6 +53,7 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
+    protected $primaryKey = 'id';
     public function department ()
     {
         return $this->belongsTo(Department::class, 'dept_id');
@@ -70,6 +72,11 @@ class User extends Authenticatable implements MustVerifyEmail
     public function orders()
     {
         return $this->hasMany(Order::class,'customer_id');
+    }
+
+    public function duties()
+    {
+        return $this->hasMany(ProductionEmployee::class, 'user_id');
     }
 
 

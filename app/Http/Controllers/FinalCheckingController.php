@@ -14,16 +14,21 @@ class FinalCheckingController extends Controller
 
     public function index()
     {
-        $order = Order::with('production.printer', 'lineups')->whereHas('production', function ($query) {
+        $order = Order::with('production.printer', 'lineups')
+        ->whereHas('production', function ($query) {
             $query->where('status', 'Printing');
-        })->get();
+            
+        })
+        ->get();
 
         return Inertia::render('Employee/FinalChecking', ['order' => $order]);
     }
 
     public function show($id)
     {
-        $order = Order::with('lineups', 'production')->find($id);
+        $order = Order::with('lineups',
+         'production.printer')->find($id);
+        
 
         return Inertia::render('Employee/FinalCheck', ['order' => $order]);
     }

@@ -2,8 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import PrimaryButton from '@/Components/PrimaryButton';
 import Checkbox from '@/Components/Checkbox';
+import InputError from '@/Components/InputError';
 
-export default function OrderFormStepTwo({ data, setData, prevStep, nextStep, products }) {
+export default function OrderFormStepTwo({ data, setData, prevStep, nextStep, products, errors }) {
     const [selectedProducts, setSelectedProducts] = useState(data.products || []);
 
     const handleProductClick = (productId, productName, productPrice) => {
@@ -30,7 +31,9 @@ export default function OrderFormStepTwo({ data, setData, prevStep, nextStep, pr
     return (
         <form>
             <h3 className="font-semibold text-lg mb-4">Select Products</h3>
+            {errors.products && <InputError message={errors.products}/>}
             <div className='grid grid-cols-2 lg:grid-cols-3 gap-4'>
+           
                 {products.map(product => (
                     <div
                         key={product.id}
@@ -40,7 +43,7 @@ export default function OrderFormStepTwo({ data, setData, prevStep, nextStep, pr
                         <img src={`/images/products/${product.image}`} alt="" className='rounded-md'/>
                         <div className="flex justify-between">
                             <div className='flex gap-2 items-center'>
-                            <Checkbox  checked={selectedProducts.some(selectedProduct => selectedProduct.id === product.id)}/>
+                            <Checkbox checked={selectedProducts.some(selectedProduct => selectedProduct.id === product.id)}/>
                             <p className='font-bold text-lg'>{product.product_name}</p>
                             </div>
                             <p>{product.product_price}.00</p>

@@ -44,10 +44,10 @@ export default function OrderDownpayment({ auth, products, order }) {
                             <h3>{order.team_name}</h3>
                             <p>{order.due_date}</p>
                         </div>
-                        <div>
+                        <div className='flex gap-4 flex-wrap'>
                             {order.files.map(image => (
                                 <>
-                                    <img src={`/images/orders/${image.file_name}`} alt={image.file_name} className='h-20' />
+                                    <img src={`/images/orders/${image.file_name}`} alt={image.file_name} className='rounded-lg h-20' />
                                 </>
                             ))}
                         </div>

@@ -114,12 +114,14 @@ const PrintingInfo = ({order, dept_id}) => {
 
 
 export default function ProductionDetails({ auth, boxes, order, printers }) {
+ 
 
 
-
+    const { props } = usePage();
+    console.log(order)
     // Determine which component to render based on department_id
     const componentToRender = order.production.status === 'Designing'
-        ?  (<>{order.latestapproved.status === 'Waiting for Approval' ? <><ApprovalWaiting order={order}/></> : <><SendDesign order={order} user={auth.employee} /></>}</>)
+        ?  (<>{order.latestapproved ? (<>{order.latestapproved.status === 'Waiting for Approval' ? <><ApprovalWaiting order={order}/></> : <><SendDesign order={order} user={auth.employee} /></>}</>) : (<><SendDesign order={order} user={auth.employee} /></>)}</>)
         : <PrintingInfo order={order} dept_id={auth.employee.dept_id} />
 
 
@@ -137,6 +139,7 @@ export default function ProductionDetails({ auth, boxes, order, printers }) {
 
             user={auth.employee}
             header={<h2 className="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">Dashboard</h2>}
+            alert={props}
         >
 
             <Head title="Production Details" />

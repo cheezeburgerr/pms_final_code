@@ -6,6 +6,7 @@ import { Head } from '@inertiajs/react';
 import UpdatePicture from './Partials/UpdatePicture';
 
 export default function Edit({ auth, mustVerifyEmail, status }) {
+    
     return (
         <AuthenticatedLayout
             user={auth.user}

@@ -94,7 +94,7 @@ export default function Authenticated({ user, header, children }) {
                                         </Link>
                                         <Link
                                             href={route('register')}
-                                            className="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
+                                            className="bg-aqua me-4 rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
                                         >
                                             Register
                                         </Link>
@@ -106,6 +106,7 @@ export default function Authenticated({ user, header, children }) {
                         </div>
 
                         <div className="justify-end -me-2 flex items-center sm:hidden">
+                        <DarkModeToggle />
                             <button
                                 onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
                                 className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-900 focus:text-gray-500 dark:focus:text-gray-400 transition duration-150 ease-in-out"
@@ -156,6 +157,7 @@ export default function Authenticated({ user, header, children }) {
                                 <div className="px-4">
                                     <div className="font-medium text-base text-gray-800 dark:text-gray-200">{user.name}</div>
                                     <div className="font-medium text-sm text-gray-500">{user.email}</div>
+                                    
                                 </div>
 
                                 <div className="mt-3 space-y-1">
@@ -179,6 +181,7 @@ export default function Authenticated({ user, header, children }) {
                                 >
                                     Register
                                 </ResponsiveNavLink>
+                                
                             </>
                         )}
                     </div>
@@ -190,7 +193,7 @@ export default function Authenticated({ user, header, children }) {
             <div className="flex flex-col min-h-[calc(100vh-75px)]">
                 <main className='bg-gray-200 dark:bg-zinc-950 flex-grow text-zinc-800 overflow-x-hidden'>{children}</main>
 
-                {user && !route().current('designer.index') && !route().current('chat') &&(
+                {user && !route().current('designer.index') && !route().current('chat') && (
                     <>
                         <ChatBox user_id={user.id} />
                     </>

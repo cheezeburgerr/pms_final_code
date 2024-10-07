@@ -11,15 +11,16 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import { Link } from '@inertiajs/react';
 
-const Chat = ({ auth, users, orders }) => {
-    const [currentMessages, setCurrentMessages] = useState();
+const Chat = ({ auth, users: initialUsers, orders: initialOrders }) => {
+    const [currentMessages, setCurrentMessages] = useState([]);
     const [message, setMessage] = useState('');
-    const [messages, setMessages] = useState('');
+    const [messages, setMessages] = useState([]);
     const [file, setFile] = useState([]);
     const [chatRoom, setChatRoom] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [chats, setChats] = useState(auth.employee.dept_id == 2 ? 'Users' : 'Orders');
-    const [ordersChat, setOrderChat] = useState(orders.filter(order => order.employees.some(e => e.user_id === auth.employee.id)))
+    const [ordersChat, setOrderChat] = useState(initialOrders.filter(order => order.employees.some(e => e.user_id === auth.employee.id)));
+    const [users, setUsers] = useState(initialUsers);
 
     const scroll = useRef();
 
@@ -45,6 +46,11 @@ const Chat = ({ auth, users, orders }) => {
             const response = await axios.get(`/api/chat/${user_id}`);
             setMessages(response.data.messages);
             setChatRoom(response.data.chatRoom);
+
+            // Move the active chat room to the top
+            // const updatedUsers = users.filter(user => user.id !== user_id);  // Remove the current user from the list
+            // setUsers([{ ...response.data.chatRoom.user }, ...updatedUsers]); // Add the user to the top of the list
+
             scrollToBottom();
         } catch (error) {
             console.error("Error fetching messages:", error.response ? error.response.data : error.message);
@@ -56,12 +62,16 @@ const Chat = ({ auth, users, orders }) => {
             const response = await axios.get(`/api/order-chat/${order_id}`);
             setMessages(response.data.messages);
             setChatRoom(response.data.chatRoom);
+
+            // Move the active order to the top
+            // const updatedOrders = ordersChat.filter(order => order.id !== order_id);  // Remove the current order from the list
+            // setOrderChat([{ ...response.data.chatRoom.order }, ...updatedOrders]);  // Add the order to the top of the list
+
             scrollToBottom();
         } catch (error) {
             console.error("Error fetching messages:", error.response ? error.response.data : error.message);
         }
     };
-
 
     const scrollToBottom = () => {
         if (scroll.current) {
@@ -80,18 +90,18 @@ const Chat = ({ auth, users, orders }) => {
             file.forEach(f => formData.append('file[]', f));
         }
 
-
         axios.post('/messages', formData).then((response) => {
-            const newMessage = {
-                id: response.data.id,
-                user: response.data.user,
-                message: response.data.message,
-                file_path: response.data.file,
-            };
-
-            console.log(file)
             setMessage('');
             setFile(null);
+
+            // Move the active chat room to the top of the list
+            if (chats === 'Users') {
+                const updatedUsers = users.filter(user => user.id !== chatRoom.user.id);  // Remove the current user
+                setUsers([{ ...chatRoom.user }, ...updatedUsers]); // Move user to the top of the list
+            } else if (chats === 'Orders') {
+                const updatedOrders = ordersChat.filter(order => order.id !== chatRoom.order.id);  // Remove the current order
+                setOrderChat([{ ...chatRoom.order }, ...updatedOrders]);  // Move order to the top of the list
+            }
         }).catch((error) => {
             console.error('Error sending message:', error);
         });
@@ -101,21 +111,16 @@ const Chat = ({ auth, users, orders }) => {
         user.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-
-    console.log(orders)
     const filteredOrders = ordersChat.filter(order =>
         order.team_name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // console.log(filteredUsers);
-
     return (
         <EmployeeLayout user={auth.employee}>
             <div className="flex gap-4 items-start h-[calc(100vh-103px)]">
-                <div className={'rounded-lg p-4 border bg-gray-100 dark:bg-zinc-900 dark:border-zinc-800 shadow-none  gap-4 w-full h-full m-0'}>
+                <div className={'rounded-lg p-2 border bg-gray-100 dark:bg-zinc-900 dark:border-zinc-800 shadow-none gap-4 w-full h-full m-0'}>
                     <div className="flex gap-4">
-                        <div className="w-1/4 xl:w-1/3">
-
+                        <div className="w-1/4 xl:w-1/3 border-r p-4 dark:border-zinc-800 ">
                             <div className="mb-4 relative">
                                 <TextInput
                                     placeholder="Search Customer"
@@ -127,72 +132,72 @@ const Chat = ({ auth, users, orders }) => {
                                     <IconSearch />
                                 </div>
                             </div>
+
                             {auth.employee.dept_id == 2 && (
                                 <>
                                     <div className="flex gap-4 w-100 mb-4">
-                                <p className={`p-1 rounded-lg w-full text-center cursor-pointer ${chats == 'Users' ? 'bg-aqua font-bold text-gray-900' : ''}`} onClick={() => setChats('Users')}>Users</p>
-                                <p className={`p-1 rounded-lg w-full text-center cursor-pointer ${chats == 'Orders' ? 'bg-aqua font-bold text-gray-900' : ''}`} onClick={() => setChats('Orders')}>Orders</p>
-                            </div>
+                                        <p className={`p-1 rounded-lg w-full text-center cursor-pointer ${chats == 'Users' ? 'bg-aqua font-bold text-gray-900' : ''}`} onClick={() => setChats('Users')}>Users</p>
+                                        <p className={`p-1 rounded-lg w-full text-center cursor-pointer ${chats == 'Orders' ? 'bg-aqua font-bold text-gray-900' : ''}`} onClick={() => setChats('Orders')}>Orders</p>
+                                    </div>
                                 </>
                             )}
-                            <div className="overflow-y-auto h-[calc(100%-50px)] no-scrollbar">
-
-                                        {chats == 'Users' && (
+                            <div className="overflow-y-auto h-[calc(100%-220px)] no-scrollbar">
+                                {chats == 'Users' && (
                                     <>
                                         {filteredUsers.map(user => (
-                                    <div
-                                        key={user.id}
-                                        className={classNames('p-2 rounded-lg flex gap-4 items-center cursor-pointer', {
-                                            'bg-teal-100 dark:bg-aqua/25': chatRoom && user.id === chatRoom.user.id
-                                        })}
-                                        onClick={() => fetchMessages(user.id)}
-                                    >
-                                        <img
-                                            src={`/images/customers/${user.image != null ? user.image : 'profile.jpg'}`}
-                                            alt=""
-                                            className='h-10 rounded-full'
-                                        />
-                                        <div>
-                                            <p className="font-bold text-ellipsis truncate">{user.name}</p>
-                                            {user.chatroom && user.chatroom.lastmessage && (
-                                                <p className='text-sm text-gray-500'>{user.chatroom.lastmessage.message}</p>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
+                                            <div
+                                                key={user.id}
+                                                className={classNames('p-2 rounded-lg flex gap-4 items-center cursor-pointer', {
+                                                    'bg-teal-100 dark:bg-aqua/25': chatRoom && user.id === chatRoom.user.id
+                                                })}
+                                                onClick={() => fetchMessages(user.id)}
+                                            >
+                                                <img
+                                                    src={`/images/customers/${user.image != null ? user.image : 'profile.jpg'}`}
+                                                    alt=""
+                                                    className='h-10 rounded-full'
+                                                />
+                                                <div>
+                                                    <p className="font-bold text-ellipsis truncate">{user.name}</p>
+                                                    {user.chatroom && user.chatroom.lastmessage && (
+                                                        <p className='text-sm text-gray-500'>{user.chatroom.lastmessage.message}</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
                                     </>
                                 )}
 
                                 {chats == 'Orders' && (
                                     <>
-                                    {filteredOrders.map(order => (
-                                    <div
-                                        key={order.id}
-                                        className={classNames('p-2 rounded-lg flex gap-4 items-center cursor-pointer', {
-                                            'bg-teal-100 dark:bg-aqua/25': ''
-                                        })}
-                                        onClick={() => fetchOrderMessages(order.id)}
-                                    >
-                                        <img
-                                            src={`/images/customers/${order.image != null ? order.image : 'profile.jpg'}`}
-                                            alt=""
-                                            className='h-10 rounded-full'
-                                        />
-                                        <div>
-                                            <p className="font-bold text-ellipsis truncate">{order.team_name}</p>
-                                            {order.chatroom && order.chatroom.lastmessage && (
-                                                <p className='text-sm text-gray-500'>{order.chatroom.lastmessage.message}</p>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
+                                        {filteredOrders.map(order => (
+                                            <div
+                                                key={order.id}
+                                                className={classNames('p-2 rounded-lg flex gap-4 items-center cursor-pointer', {
+                                                    'bg-teal-100 dark:bg-aqua/25': ''
+                                                })}
+                                                onClick={() => fetchOrderMessages(order.id)}
+                                            >
+                                                <img
+                                                    src={`/images/customers/${order.image != null ? order.image : 'profile.jpg'}`}
+                                                    alt=""
+                                                    className='h-10 rounded-full'
+                                                />
+                                                <div>
+                                                    <p className="font-bold text-ellipsis truncate">{order.team_name}</p>
+                                                    {order.chatroom && order.chatroom.lastmessage && (
+                                                        <p className='text-sm text-gray-500'>{order.chatroom.lastmessage.message}</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
                                     </>
                                 )}
                             </div>
                         </div>
                         <div className="w-full">
                             <ChatContent
-                            chatRoom={chatRoom && chatRoom}
+                                chatRoom={chatRoom && chatRoom}
                                 messages={messages}
                                 order={chatRoom && (chatRoom.type === 'Order' && chatRoom.order.latestapproved)}
                                 handleSubmit={handleSubmit}
@@ -208,16 +213,25 @@ const Chat = ({ auth, users, orders }) => {
                 </div>
 
                 <Card className={'bg-gray-100 dark:bg-zinc-900 dark:border-zinc-800 shadow-none w-1/4 h-full '}>
-                    {chatRoom && (
-                        <div className="flex flex-col items-center h-full pt-4">
-                            <img
-                                src={`/images/customers/${chatRoom.user.image != null ? chatRoom.user.image : 'profile.jpg'}`}
-                                alt=""
-                                className='h-20 rounded-full mb-4 '
-                            />
-                            <h1 className='font-bold text-xl'>{chatRoom.name}</h1>
-                        </div>
-                    )}
+                    <div className="relative">
+                        {chatRoom && (
+                            <>
+                                {chatRoom.order && (
+                                    <>
+                                        {chatRoom.order.latestapproved && (
+                                            <>
+                                                <Card className=' animate-pulse bg-gradient-to-r from-aqua to-purple-500 dark:border-zinc-800 mb-4'>
+                                                    <div className='flex flex-col items-center text-center'>
+                                                        <h2 className='text-3xl mb-4 font-bold text-white'>Order In Progress</h2>
+                                                    </div>
+                                                </Card>
+                                            </>
+                                        )}
+                                    </>
+                                )}
+                            </>
+                        )}
+                    </div>
                 </Card>
             </div>
         </EmployeeLayout>
@@ -225,7 +239,6 @@ const Chat = ({ auth, users, orders }) => {
 };
 
 export default Chat;
-
 
 const ChatContent = ({ chatRoom, messages, handleSubmit, message, setMessage, file, setFile, scroll, user_id, order }) => {
     const fileInputRef = useRef(null);
@@ -245,28 +258,10 @@ const ChatContent = ({ chatRoom, messages, handleSubmit, message, setMessage, fi
     return (
         <div className="p-2 dark:text-zinc-100">
             <h1 className="font-bold text-xl mb-4">{chatRoom ? chatRoom.name : 'Chat Box'}</h1>
-            <div className="relative">
-                {order && (
+            <hr className='dark:border-zinc-800' />
+            {chatRoom ? (
                 <>
-                    <Card className='absolute inset-x-0 animate-pulse bg-gradient-to-r from-aqua to-purple-500 dark:border-zinc-800 mb-4'>
-                        <div className="w-full flex gap-4 justify-between">
-                            <div>
-                                <p className="font-extrabold text-xl text-zinc-900">Waiting for Approval</p>
-                                <p className='text-zinc-900'>We are waiting for the client to check the design.</p>
-                            </div>
-                            {/* <div>
-                                <Link href={route('orders.approval', chatRoom.order.id)}>
-                                    <SecondaryButton>
-                                        Check
-                                    </SecondaryButton>
-                                </Link>
-                            </div> */}
-                        </div>
-                    </Card>
-                </>
-            )}
-            </div>
-            <div className="chat-box overflow-y-auto h-[calc(100vh-250px)] no-scrollbar py-4">
+                    <div className="chat-box overflow-y-auto h-[calc(100vh-250px)] no-scrollbar py-4">
                 {messages && messages.map((msg, index) => (
                     <>
                         <Message key={msg.id} message={msg} user_id={user_id} previousMessage={messages[index - 1]} />
@@ -275,6 +270,15 @@ const ChatContent = ({ chatRoom, messages, handleSubmit, message, setMessage, fi
                 ))}
                 <span ref={scroll}></span>
             </div>
+                </>
+            ) : 
+            (
+                <>
+                    <div className='chat-box overflow-y-auto h-[calc(100vh-250px)] flex justify-center items-center'>
+                        <p className='font-bold'>Select a chat to open.</p>
+                    </div>
+                </>
+            )}
             <div className="p-2 dark:bg-zinc-800 rounded-lg">
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                     <div className="flex flex-wrap gap-2">
@@ -322,5 +326,3 @@ const ChatContent = ({ chatRoom, messages, handleSubmit, message, setMessage, fi
         </div>
     );
 };
-
-

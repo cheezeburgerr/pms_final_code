@@ -1,6 +1,6 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { Head, Link, usePage, useForm } from '@inertiajs/react';
-import { IconCheck, IconCsv, IconEye, IconFilter, IconPdf, IconPrinter } from '@tabler/icons-react';
+import { IconAlertTriangle, IconCheck, IconCsv, IconEye, IconFilter, IconPdf, IconPrinter } from '@tabler/icons-react';
 import { Popover, Toast, Tooltip } from 'flowbite-react';
 import moment from 'moment';
 import PrimaryButton from '@/Components/PrimaryButton';
@@ -15,6 +15,9 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import OrdersReport from '../Reports/OrdersReport';
 import { PDFDownloadLink, pdf } from '@react-pdf/renderer';
+import SecondaryButton from '@/Components/SecondaryButton';
+import Modal from '@/Components/Modal';
+import PrintModal from '@/Components/PrintModal';
 
 
 const Filters = ({ showUserOrders, setShowUserOrders, filterStatus, setFilterStatus, startDate, setStartDate, endDate, setEndDate }) => {
@@ -55,6 +58,7 @@ const Filters = ({ showUserOrders, setShowUserOrders, filterStatus, setFilterSta
                     className='border-zinc-300 shadow-sm dark:border-zinc-800 text-sm rounded-md dark:bg-zinc-800'
                     placeholderText='End Date'
                 />
+
             </div>
         </div>
     );
@@ -72,7 +76,34 @@ export default function Teams({ auth, order, artists }) {
     const [filterStatus, setFilterStatus] = useState('');
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
+    const [showPrintModal, setShowPrintModal] = useState(false);
 
+    const [selectedMonth, setSelectedMonth] = useState(null);
+
+
+    const closeModal = () => {
+        setShowPrintModal(false);
+    };
+
+
+    // const filteredOrders = useMemo(() => {
+    //     let orders = showUserOrders
+    //         ? order.filter(o => o.employees.some(e => e.user_id === auth.employee.id))
+    //         : order;
+
+    //     if (filterStatus) {
+    //         orders = orders.filter(o => o.production.status === filterStatus);
+    //     }
+
+    //     if (startDate && endDate) {
+    //         orders = orders.filter(o => {
+    //             const orderDate = moment(o.due_date);
+    //             return orderDate.isBetween(startDate, endDate, 'days', '[]');
+    //         });
+    //     }
+
+    //     return orders;
+    // }, [order, showUserOrders, filterStatus, startDate, endDate, auth.employee.id]);
     const filteredOrders = useMemo(() => {
         let orders = showUserOrders
             ? order.filter(o => o.employees.some(e => e.user_id === auth.employee.id))
@@ -82,6 +113,7 @@ export default function Teams({ auth, order, artists }) {
             orders = orders.filter(o => o.production.status === filterStatus);
         }
 
+        // Filter by date range if startDate and endDate are selected
         if (startDate && endDate) {
             orders = orders.filter(o => {
                 const orderDate = moment(o.due_date);
@@ -89,8 +121,22 @@ export default function Teams({ auth, order, artists }) {
             });
         }
 
+        // Filter by selected month if provided
+        if (selectedMonth) {
+            orders = orders.filter(o => {
+                const orderDate = moment(o.created_at);
+                console.log(selectedMonth);
+                return orderDate.month() +1 == selectedMonth; // moment.month() is 0-indexed
+            });
+        }
+
         return orders;
-    }, [order, showUserOrders, filterStatus, startDate, endDate, auth.employee.id]);
+    }, [order, showUserOrders, filterStatus, startDate, endDate, selectedMonth, auth.employee.id]);
+
+    
+    const handleMonthChange = (e) => {
+        setSelectedMonth(e.target.value);
+    };
 
     const { props } = usePage();
     const [selectedOrderId, setSelectedOrderId] = useState(null);
@@ -140,7 +186,7 @@ export default function Teams({ auth, order, artists }) {
                             <>
                                 <div className="group relative hover:z-50">
                                     <img src={`/images/customers/${emp.employee.image != null ? emp.employee.image : 'profile.jpg'}`} alt="" className='h-5 rounded-full ' />
-                                    <div className='absolute bottom-5 invisible group-hover:visible p-2 bg-zinc-900 rounded-lg z-50'>
+                                    <div className='absolute bottom-5 invisible group-hover:visible p-2 bg-gray-100 dark:bg-zinc-900 rounded-lg z-50'>
                                         <p className='w-full font-bold'>{emp.employee.name}</p>
                                         <p className='text-xs'>{emp.employee_role}</p></div>
                                 </div>
@@ -162,6 +208,7 @@ export default function Teams({ auth, order, artists }) {
                 Header: 'Action',
                 Cell: ({ row }) => (
                     <div className='flex gap-4 justify-center items-center'>
+
                         <Link href={route('employee.vieworder', row.original.id)}>
                             <Tooltip content="View">
                                 <IconEye className='hover:text-aqua transition' />
@@ -185,6 +232,27 @@ export default function Teams({ auth, order, artists }) {
                                     <IconPrinter className='hover:text-aqua transition' />
                                 </Tooltip>
                             </Link>
+                        )}{
+                            row.original.due_date &&
+                            (() => {
+                                const dueDate = new Date(row.original.due_date);
+                                const today = new Date();
+                                const threeDaysBeforeDueDate = new Date(dueDate);
+                                threeDaysBeforeDueDate.setDate(dueDate.getDate() - 3);
+
+                                return today >= threeDaysBeforeDueDate;
+                            })()
+                            && (<IconAlertTriangle />)
+                        }
+                        {auth.employee.dept_id === 1 && row.original.production.status == 'Designing' && (
+                            <>
+                                <Tooltip content='Proceed to Printing' placement='bottom'>
+                                    <IconPrinter
+                                        className="text-gray-500 hover:text-gray-900 dark:hover:text-gray-800 cursor-pointer"
+                                        onClick={() => setShowPrintModal(true)}
+                                    />
+                                </Tooltip>
+                            </>
                         )}
                     </div>
                 ),
@@ -295,19 +363,29 @@ export default function Teams({ auth, order, artists }) {
 
     const handleOpenInNewTab = async () => {
         try {
-          const blob = await pdf(<OrdersReport data={filteredOrders} month={startDate ? moment(startDate).format('MMMM d YYYY') : null} status={filterStatus} artist={showUserOrders ? auth.employee.name : ''}/>).toBlob();
-          const url = URL.createObjectURL(blob);
-          window.open(url, '_blank');
+            const blob = await pdf(<OrdersReport data={filteredOrders} month={startDate ? moment(startDate).format('MMMM d YYYY') : null} status={filterStatus} artist={showUserOrders ? auth.employee.name : ''} />).toBlob();
+            const url = URL.createObjectURL(blob);
+            window.open(url, '_blank');
         } catch (error) {
-          console.error('Error generating PDF:', error);
+            console.error('Error generating PDF:', error);
         }
-      };
+    };
 
     return (
         <EmployeeLayout
             user={auth.employee}
             header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Dashboard</h2>}
         >
+
+            <Modal show={showPrintModal} onClose={closeModal}>
+                <PrintModal
+                    orderId={order.id}
+                    onClose={() => setShowPrintModal(false)}
+                    onSubmit={() => handlePrintSubmit()}
+                    showPrintModal
+                    setShowPrintModal={() => setShowPrintModal()}
+                />
+            </Modal>
             {props.flash.success && (
                 <div className="fixed bottom-10 left-10 z-50">
                     <Toast>
@@ -329,11 +407,23 @@ export default function Teams({ auth, order, artists }) {
                     endDate={endDate}
                     setEndDate={setEndDate}
                 />
+
+                <div className='flex gap-4'>
+                <select onChange={handleMonthChange} value={selectedMonth} className='border-zinc-300 shadow-sm dark:border-zinc-800 text-sm rounded-md dark:bg-zinc-800'>
+                    <option value=''>Select Month</option>
+                    {Array.from({ length: 12 }, (_, index) => {
+                        const monthName = moment().month(index).format("MMMM");
+                        return (
+                            <option key={index} value={index + 1}>{monthName}</option>
+                        );
+                    })}
+                </select>
                 <div className='space-x-2'>
-                    <PrimaryButton onClick={exportToCSV}><IconCsv /></PrimaryButton>
+                    {/* <PrimaryButton onClick={exportToCSV}><IconCsv /></PrimaryButton> */}
                     {/* <PrimaryButton onClick={exportToPDF}><IconPdf /></PrimaryButton> */}
                     {/* <PrimaryButton onClick={generatePDF}><IconPdf /></PrimaryButton> */}
-                    <PrimaryButton onClick={handleOpenInNewTab}><IconPdf /></PrimaryButton>
+                    <SecondaryButton onClick={handleOpenInNewTab}><IconPdf /></SecondaryButton>
+                </div>
                 </div>
             </div>
             <div className="md:hidden">

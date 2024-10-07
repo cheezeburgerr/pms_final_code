@@ -1,6 +1,7 @@
 import { StyleSheet } from '@react-pdf/renderer';
 
 const styles = StyleSheet.create({
+    
     container: {
         padding: 20,
         backgroundColor: '#f9fafb', // Tailwind's bg-gray-100
@@ -54,6 +55,11 @@ const styles = StyleSheet.create({
         display: 'flex',
         flexDirection: 'row',
     },
+    tableHead: {
+        display: 'flex',
+        flexDirection: 'row',
+        backgroundColor: '#00e1d2',
+    },
     tableColSpan: {
         width: '50%', // Adjust this width according to the number of columns you want to span
         borderStyle: 'solid',
@@ -67,7 +73,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#00e1d2',
     },
     tableCol: {
-        width: '25%',
+        width: '100%',
         borderStyle: 'solid',
         borderColor: '#e5e7eb', // Tailwind's border-gray-200
         borderWidth: 1,
@@ -78,6 +84,7 @@ const styles = StyleSheet.create({
         fontSize: 10,
         padding: 1,
     },
+   
     heading: {
         fontSize: 16,
         fontWeight: 'bold',
@@ -95,6 +102,27 @@ const styles = StyleSheet.create({
         backgroundColor: '#cccccc', // Tailwind's border-gray-200
         marginVertical: 10,
     },
+     header: {
+        fontSize: 16,
+        marginBottom: 10,
+    },
+    totalEarnings: {
+        fontSize: 16,
+        marginTop: 20,
+        textAlign: 'right',
+    },
+    productImage: {
+        width: 50,
+        height: 50,
+    },
+    // totalEarnings: {
+    //             fontSize: 16,
+    //             marginTop: 20,
+    //             textAlign: 'right',
+    //         },
+    section: {
+                marginBottom: 10,
+            },
 });
 
 export default styles;

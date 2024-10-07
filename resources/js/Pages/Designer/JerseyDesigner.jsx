@@ -16,6 +16,7 @@ import InputLabel from '@/Components/InputLabel';
 import { IconDeviceFloppy, IconInfoCircle, IconMan, IconPencil, IconPhoto, IconQuestionMark, IconTextCaption, IconUpload } from '@tabler/icons-react';
 import Authenticated from '@/Layouts/AuthenticatedLayout';
 import useCanvasState from './useCanvasState';
+import { router } from '@inertiajs/react';
 
 
 
@@ -62,8 +63,40 @@ export default function Configurator({ auth, product }) {
         };
 
 
-        const canvas = new fabric.Canvas('canvas', { width: 2000, height: 2000, preserveObjectStacking: true, selection: false });
+        const canvas = new fabric.Canvas('canvas', { width: 1000, height: 1000, preserveObjectStacking: true, selection: false, });
 
+        const deleteIcon = "data:image/svg+xml;base64,PHN2ZyB..."; // Add your base64 SVG icon
+
+        // Customizing control
+        // fabric.Object.prototype.controls.deleteControl = new fabric.Control({
+        //     x: 0.5,
+        //     y: -0.5,
+        //     offsetY: -10,
+        //     cursorStyle: 'pointer',
+        //     mouseUpHandler: deleteObject,
+        //     render: function(ctx, left, top, styleOverride, fabricObject) {
+        //         const size = 24;
+        //         const img = new Image();
+        //         img.src = deleteIcon;
+        //         ctx.save();
+        //         ctx.translate(left, top);
+        //         ctx.drawImage(img, -size / 2, -size / 2, size, size);
+        //         ctx.restore();
+        //     },
+        //     cornerSize: 24
+        // });
+        
+        
+        // function deleteObject(eventData, transform) {
+        //     const target = transform.target; // The target object to be deleted
+        //     canvas.remove(target); // Remove the object from the canvas
+        //     canvas.requestRenderAll(); // Re-render the canvas after removing the object
+        // }
+        
+        fabric.Object.prototype.cornerSize = 20;
+        fabric.Object.prototype.cornerColor = 'gray';
+        fabric.Object.prototype.transparentCorners = false;
+        fabric.Object.prototype.padding = 10;
         setCanvas(canvas);
 
         const handleSelectionEvent = () => {
@@ -90,6 +123,15 @@ export default function Configurator({ auth, product }) {
             setShowProperties(false);
             setSelectedObject(null);
         })
+
+        canvas.on({
+            'object:moving': function (e) {
+                e.target.opacity = 0.5;
+            },
+            'object:modified': function (e) {
+                e.target.opacity = 1;
+            }
+        });
 
         const handleFileUpload = (file) => {
             const reader = new FileReader();
@@ -121,6 +163,7 @@ export default function Configurator({ auth, product }) {
 
 
 
+        
 
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Delete') {
@@ -197,11 +240,11 @@ export default function Configurator({ auth, product }) {
 
     const loadCanvasFromJSON = (json) => {
         canvas.clear();
-        document.getElementById('colorPickerContainer').innerHTML=" ";
+        document.getElementById('colorPickerContainer').innerHTML = " ";
 
         canvas.loadFromJSON(json, canvas.renderAll.bind(canvas), (o, object) => {
             console.log(object.id);
-            if(object.id === 'ZONES'){
+            if (object.id === 'ZONES') {
                 const childObjects = object.getObjects();
                 childObjects.forEach((child) => {
                     DesignerFunctions.createColorPicker(child, canvas);
@@ -291,11 +334,28 @@ export default function Configurator({ auth, product }) {
 
         const dataUrl = canvas.toDataURL('image/png');
         const link = document.createElement('a');
+        console.log(dataUrl)
         link.href = dataUrl;
         link.download = 'threejs-scene.png';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    };
+
+    const proceedtoOrder = () => {
+        const mount = document.getElementById("to_save");
+        if (!mount) return;
+
+        const canvas = mount.querySelector('canvas');
+        if (!canvas) return;
+
+
+        const dataUrl = canvas.toDataURL('image/png');
+
+
+        router.post('/design_order', {
+            data: { image_data: dataUrl }
+        });
     };
     return (
         <>
@@ -307,8 +367,8 @@ export default function Configurator({ auth, product }) {
                 <div className="absolute bottom-20 inset-x-0">
                     <div className="flex justify-center text-cent">
 
-                    <p className="bg-aqua p-4 rounded-lg">Click any part of the model to add the object.</p>
-                </div>
+                        <p className="bg-aqua p-4 rounded-lg">Click any part of the model to add the object.</p>
+                    </div>
                 </div>
             )}
             <div id="to_save" className={`fixed z-50 hidden bottom-0 bg-green-500`} ></div>
@@ -340,30 +400,30 @@ export default function Configurator({ auth, product }) {
                                 <button onClick={() => DesignerFunctions.addCircle(canvas, setAddToModel)} id="circle-button" className='p-2 cursor-pointer'><svg width="15" height="15" xmlns="http://www.w3.org/2000/svg" title='Circle Tool'>
                                     <circle r="7.5" cx="7.5" cy="7.5" fill='white' />
                                 </svg></button>
-                                <button onClick={() => DesignerFunctions.draw(canvas)} id="draw-button" className='p-1 cursor-pointer' title='Draw'><IconPencil  /></button>
-                                <button onClick={() => DesignerFunctions.addText2(canvas, setAddToModel)} id="textButton" className='p-1 cursor-pointer'><IconTextCaption  /></button>
+                                <button onClick={() => DesignerFunctions.draw(canvas)} id="draw-button" className='p-1 cursor-pointer' title='Draw'><IconPencil /></button>
+                                <button onClick={() => DesignerFunctions.addText2(canvas, setAddToModel)} id="textButton" className='p-1 cursor-pointer'><IconTextCaption /></button>
 
 
                             </div>
                             <div className="p-1 py-3 rounded-lg dark:bg-zinc-900 bg-gray-100 flex flex-col gap-2 justify-center items-center relative">
-                            {tutorialMode && (
-                            <>
-                                <div className="bg-gray-50 absolute left-[60px] w-[300px] top-0 dark:bg-zinc-900 rounded-lg p-4">
-                                    <h6>Avatar</h6>
-                                    <p>Click the Avatar Icon to show/hide the person.</p>
-                                    <p>You can edit its color by clicking the avatar color button.</p>
-                                </div>
-                            </>
-                        )}
+                                {tutorialMode && (
+                                    <>
+                                        <div className="bg-gray-50 absolute left-[60px] w-[300px] top-0 dark:bg-zinc-900 rounded-lg p-4">
+                                            <h6>Avatar</h6>
+                                            <p>Click the Avatar Icon to show/hide the person.</p>
+                                            <p>You can edit its color by clicking the avatar color button.</p>
+                                        </div>
+                                    </>
+                                )}
                                 <button onClick={() => toggleVisibility()}><IconMan /></button>
                                 <div className="p-2">
                                     <div onClick={() => handleColorButtonClick('avatar')} className='h-5 w-5 border-1 cursor-pointer' style={{ backgroundColor: avatarColor }} title='Fill Color'></div>
                                 </div>
                             </div>
-                            <div className="p-4 rounded-full bg-aqua cursor-pointer text-white" title='Save as Image' onClick={() => saveAsImage()}><IconPhoto/></div>
-                            <div className="p-4 rounded-full dark:bg-zinc-800 bg-gray-100 cursor-pointer text-gray-800 dark:text-white" title='Save as JSON' onClick={() => saveAsJSON()}><IconDeviceFloppy/></div>
-                            <div className="p-4 rounded-full dark:bg-zinc-800 bg-gray-100 cursor-pointer text-gray-800 dark:text-white" title='Load' onClick={() => handleUploadButtonClick()}><IconUpload/></div>
-                            <input type="file" accept=".json" onChange={handleFileUpload} ref={inputRef} className='hidden'/>
+                            <div className="p-4 rounded-full bg-aqua cursor-pointer text-white" title='Save as Image' onClick={() => saveAsImage()}><IconPhoto /></div>
+                            <div className="p-4 rounded-full dark:bg-zinc-800 bg-gray-100 cursor-pointer text-gray-800 dark:text-white" title='Save as JSON' onClick={() => saveAsJSON()}><IconDeviceFloppy /></div>
+                            <div className="p-4 rounded-full dark:bg-zinc-800 bg-gray-100 cursor-pointer text-gray-800 dark:text-white" title='Load' onClick={() => handleUploadButtonClick()}><IconUpload /></div>
+                            <input type="file" accept=".json" onChange={handleFileUpload} ref={inputRef} className='hidden' />
 
                         </div>
 
@@ -380,16 +440,16 @@ export default function Configurator({ auth, product }) {
                         )}
                     </div>
                     {showColorPicker && (
-                            <>
-                                {pickerType == 'fill' ? (
+                        <>
+                            {pickerType == 'fill' ? (
                                 <ChromePicker color={selectedColor} onChange={(color) => DesignerFunctions.handleFillColorChange(color, canvas, setSelectedColor)} />
                             ) : pickerType == 'stroke' ? (
                                 <ChromePicker color={strokeColor} onChange={(color) => DesignerFunctions.handleStrokeColorChange(color, canvas, setStrokeColor)} />
-                            ) :    <ChromePicker color={avatarColor} onChange={(color) => changeAvatarColor(color, setAvatarColor)} />}
+                            ) : <ChromePicker color={avatarColor} onChange={(color) => changeAvatarColor(color, setAvatarColor)} />}
 
-                            </>
-                        )}
-                        {/* {showStrokeColorPicker && (
+                        </>
+                    )}
+                    {/* {showStrokeColorPicker && (
                             <ChromePicker color={strokeColor} onChange={(color) => DesignerFunctions.handleStrokeColorChange(color, canvas, setStrokeColor)} />
                         )}
                         {showAvatarPicker && (
@@ -400,7 +460,7 @@ export default function Configurator({ auth, product }) {
                 <div className={`lg:m-5 rounded-lg w-full lg:w-1/3 2xl:w-1/4 fixed right-0 lg:h-screen bottom-0 transition-all lg:top-10 bg-gray-100 dark:bg-zinc-900   ${showProperties ? 'h-[calc(100vh-500px)] translate-y-0' : 'translate-y-full lg:translate-y-0'} overflow-y-scroll no-scrollbar`}>
 
                     <div className="text-center">
-                        <button onClick={() => setShowProperties(!showProperties)} className='p-1 cursor-pointer'><IconInfoCircle  size={32} className={`lg:hidden`} /></button>
+                        <button onClick={() => setShowProperties(!showProperties)} className='p-1 cursor-pointer'><IconInfoCircle size={32} className={`lg:hidden`} /></button>
                     </div>
                     <div className={`w-screen lg:w-full rounded-lg transition-all lg:h-full `}>
                         <div className="bg-gray-100 mb-4">
@@ -412,13 +472,13 @@ export default function Configurator({ auth, product }) {
                                         <p className='mb-4'>Cloth Parts Colors</p>
                                         <div id='colorPickerContainer' className='h-full'></div>
                                         {tutorialMode && (
-                                        <>
-                                            <div className=" bg-gray-50 dark:bg-zinc-800 rounded-lg p-4 dark:text-gray-100">
-                                                <h6>Cloth Colors</h6>
-                                                <p>Click the color picker to change specific parts of the cloth</p>
-                                            </div>
-                                        </>
-                                    )}
+                                            <>
+                                                <div className=" bg-gray-50 dark:bg-zinc-800 rounded-lg p-4 dark:text-gray-100">
+                                                    <h6>Cloth Colors</h6>
+                                                    <p>Click the color picker to change specific parts of the cloth</p>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                     {selectedObject ? (
                                         <>
@@ -482,14 +542,14 @@ export default function Configurator({ auth, product }) {
                                         </>
                                     )}
                                     <div className="p-4">
-                                    {tutorialMode && (
-                                        <>
-                                            <div className="absolute bottom-20 bg-gray-50 dark:bg-zinc-800 rounded-lg p-4 dark:text-gray-100">
-                                                <h6>Properties Tab</h6>
-                                                <p>Here, you can modify your objects. Select or click one object in your model and its properties will appear.</p>
-                                            </div>
-                                        </>
-                                    )}
+                                        {tutorialMode && (
+                                            <>
+                                                <div className="absolute bottom-20 bg-gray-50 dark:bg-zinc-800 rounded-lg p-4 dark:text-gray-100">
+                                                    <h6>Properties Tab</h6>
+                                                    <p>Here, you can modify your objects. Select or click one object in your model and its properties will appear.</p>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
 
                                 </Tabs.Item>
@@ -497,20 +557,20 @@ export default function Configurator({ auth, product }) {
                                     <div className="p-4">
                                         <div className='flex gap-2 w-full'>
                                             <TextInput type="text" id="text-input" className='w-full' placeholder="Enter text" />
-                                            <PrimaryButton id="add-text-btn"  onClick={() => DesignerFunctions.addText(canvas, setAddToModel)}>Add</PrimaryButton>
+                                            <PrimaryButton id="add-text-btn" onClick={() => DesignerFunctions.addText(canvas, setAddToModel)}>Add</PrimaryButton>
                                         </div>
                                         <div className='p-4'>
                                             <p className="font-bold">Texts</p>
                                             <div id="textObjects"></div>
                                         </div>
                                         {tutorialMode && (
-                                        <>
-                                            <div className="absolute bottom-20 bg-gray-50 dark:bg-zinc-800 rounded-lg p-4 dark:text-gray-100">
-                                                <h6>Text Tab</h6>
-                                                <p>Select one text in the list and it will automatically select it in the canvas. You can add text by using the input above.</p>
-                                            </div>
-                                        </>
-                                    )}
+                                            <>
+                                                <div className="absolute bottom-20 bg-gray-50 dark:bg-zinc-800 rounded-lg p-4 dark:text-gray-100">
+                                                    <h6>Text Tab</h6>
+                                                    <p>Select one text in the list and it will automatically select it in the canvas. You can add text by using the input above.</p>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 </Tabs.Item>
                                 <Tabs.Item title="Objects" >
@@ -518,18 +578,18 @@ export default function Configurator({ auth, product }) {
 
                                         <div id="shapes"></div>
                                         {tutorialMode && (
-                                        <>
-                                            <div className="absolute bottom-20 bg-gray-50 dark:bg-zinc-800 rounded-lg p-4 dark:text-gray-100">
-                                                <h6>Objects Tab</h6>
-                                                <p>Select one objects in the list and it will automatically select it in the canvas. This is the tabs for shapes.</p>
-                                            </div>
-                                        </>
-                                    )}
+                                            <>
+                                                <div className="absolute bottom-20 bg-gray-50 dark:bg-zinc-800 rounded-lg p-4 dark:text-gray-100">
+                                                    <h6>Objects Tab</h6>
+                                                    <p>Select one objects in the list and it will automatically select it in the canvas. This is the tabs for shapes.</p>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 </Tabs.Item>
                                 <Tabs.Item title="Images" >
                                     <div className="p-4">
-                                        <TextInput type='file' id='upload-image' />
+                                        <TextInput type='file' id='upload-image' onChange={() => DesignerFunctions.addImage(canvas, setAddToModel)} />
                                         <PrimaryButton onClick={() => DesignerFunctions.addImage(canvas)}>Add</PrimaryButton>
                                         <div style={{ display: 'flex', flexWrap: 'wrap' }}>
                                             {svgFiles.map((svgUrl, index) => (
@@ -540,42 +600,45 @@ export default function Configurator({ auth, product }) {
                                         </div>
                                         <div id="images"></div>
                                         {tutorialMode && (
-                                        <>
-                                            <div className="absolute bottom-20 bg-gray-50 dark:bg-zinc-800 rounded-lg p-4 dark:text-gray-100">
-                                                <h6>Images Tab</h6>
-                                                <p>Select one image in the list and it will automatically select it in the canvas. Add shapes or images using our predefined our your custom upload.</p>
-                                            </div>
-                                        </>
-                                    )}
+                                            <>
+                                                <div className="absolute bottom-20 bg-gray-50 dark:bg-zinc-800 rounded-lg p-4 dark:text-gray-100">
+                                                    <h6>Images Tab</h6>
+                                                    <p>Select one image in the list and it will automatically select it in the canvas. Add shapes or images using our predefined our your custom upload.</p>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 </Tabs.Item>
                                 <Tabs.Item title="Designs" >
                                     {/* <button onClick={() => DesignerFunctions.changeDesign(canvas, '/designs/BLUE-WHITE-JERSEY.svg')}>Change</button> */}
                                     <div className="p-5 grid grid-cols-4 gap-4">
-                                    {product.designs.map(design => (
-                                        <>
-                                            <div className='rounded-lg dark:bg-zinc-800 p-2 cursor-pointer' onClick={() => DesignerFunctions.changeDesign(canvas, `/storage/${design.file}`)}>
-                                                
-                                            <img src={`/storage/${design.file}`} alt={design.name} />
-                                            {/* {design.name} */}
-                                            </div>
-                                        </>
-                                    ))}
+                                        {product.designs.map(design => (
+                                            <>
+                                                <div className='rounded-lg dark:bg-zinc-800 p-2 cursor-pointer' onClick={() => DesignerFunctions.changeDesign(canvas, `/storage/${design.file}`)}>
+
+                                                    <img src={`/storage/${design.file}`} alt={design.name} />
+                                                    {/* {design.name} */}
+                                                </div>
+                                            </>
+                                        ))}
                                     </div>
                                     <div className="p-4">
-                                    {tutorialMode && (
-                                        <>
-                                            <div className="absolute bottom-20 bg-gray-50 dark:bg-zinc-800 rounded-lg p-4 dark:text-gray-100">
-                                                <h6>Designs Tab</h6>
-                                                <p>Select one design in the list and it will automatically change the design of the cloth.</p>
-                                            </div>
-                                        </>
-                                    )}
+                                        {tutorialMode && (
+                                            <>
+                                                <div className="absolute bottom-20 bg-gray-50 dark:bg-zinc-800 rounded-lg p-4 dark:text-gray-100">
+                                                    <h6>Designs Tab</h6>
+                                                    <p>Select one design in the list and it will automatically change the design of the cloth.</p>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 </Tabs.Item>
                             </Tabs>
-                        </div>
 
+                        </div>
+                        <div className='fixed bottom-20 right-10'>
+                            <PrimaryButton onClick={() => proceedtoOrder()}>Proceed to Order</PrimaryButton>
+                        </div>
                         <>
 
 

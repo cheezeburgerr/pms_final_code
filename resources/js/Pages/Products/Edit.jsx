@@ -103,8 +103,8 @@ export default function EditProduct({ auth, product }) {
                 </div>
 
                 
-                    <div className="lg:flex gap-8">
-                    <div className="columns w-1/4">
+                    <div className="lg:flex gap-4">
+                    <div className="columns mb-4 lg:w-1/4 bg-gray-100 dark:bg-zinc-900 p-4 rounded-lg border border-gray-300/75 dark:border-zinc-800 shadow-sm">
                         <div className="mb-4">
                             <InputLabel htmlFor="product_name">Product Name</InputLabel>
                             <TextInput
@@ -129,10 +129,11 @@ export default function EditProduct({ auth, product }) {
                         </div>
                     </div>
 
-                    <div className="mb-8">
+                    <div className="mb-8 bg-gray-100 dark:bg-zinc-900 p-4 rounded-lg border border-gray-300/75 dark:border-zinc-800 shadow-sm">
                         <h3 className="text-xl font-semibold mb-4">Categories</h3>
                         {data.categories.map((category, categoryIndex) => (
                             <div key={categoryIndex} className="mb-6">
+                                <h1 className='font-bold mb-2'>Category {categoryIndex + 1}</h1>
                                 <div className="flex items-center mb-2">
                                     <TextInput
                                         type="text"
@@ -146,28 +147,36 @@ export default function EditProduct({ auth, product }) {
                                     </SecondaryButton>
                                 </div>
                                 <div className="ml-4">
-                                    <h4 className="text-lg font-semibold mb-2">Variations</h4>
+                                    <h4 className="text-sm font-semibold mb-2">Variations</h4>
                                     {category.variations.map((variation, variationIndex) => (
-                                        <div key={variation.id} className="flex items-center mb-2">
-                                            <TextInput
+                                        <div key={variation.id} className="flex items-start md:items-center mb-2 gap-4">
+                                            <div className="md:flex gap-2">
+                                            <div className='mb-2'>
+                                                <p>Variation {variationIndex + 1}</p>
+                                                <TextInput
                                                 type="text"
                                                 name="variation_name"
                                                 placeholder="Variation Name"
                                                 value={variation.variation_name}
                                                 onChange={(e) => handleVariationChange(categoryIndex, variationIndex, e)}
                                             />
-                                            <TextInput
+                                            </div>
+                                            <div className='mb-2'>
+                                                <p>Price</p>
+                                                <TextInput
                                                 type="number"
                                                 name="variation_price"
                                                 placeholder="Variation Price"
                                                 value={variation.variation_price}
                                                 onChange={(e) => handleVariationChange(categoryIndex, variationIndex, e)}
-                                                className="ml-2"
+                                                
                                             />
+                                            </div>
+                                            </div>
                                             <SecondaryButton
                                                 type="button"
                                                 onClick={() => removeVariation(categoryIndex, variationIndex)}
-                                                className="ml-2"
+                                                
                                             >
                                                 <IconX/>
                                             </SecondaryButton>
@@ -183,8 +192,8 @@ export default function EditProduct({ auth, product }) {
                             Add Category
                         </PrimaryButton>
                     </div>
-                    <div>
-                    <InputLabel htmlFor="image">Product Image</InputLabel>
+                    <div className='bg-gray-100 dark:bg-zinc-900 p-4 rounded-lg border border-gray-300/75 dark:border-zinc-800 shadow-sm'>
+                    <p  className='font-bold text-lg mb-2'>Product Image</p>
                             <input
                                 type="file"
                                 name="image"

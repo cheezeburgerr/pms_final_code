@@ -9,7 +9,7 @@ const DoughnutChart = ({ title, data }) => {
       {
         data: Object.values(data).map(item => item.count),
         backgroundColor: [
-          '#00ffff',
+          '#00e1d2',
           '#a855f7',
           '#f59e0b',
           '#f97316',
@@ -38,7 +38,7 @@ const DoughnutChart = ({ title, data }) => {
   return <Doughnut data={chartData} options={options} />;
 };
 
-const DoughnutCharts = ({ groupedData, title }) => {
+export default function DoughnutCharts ({ groupedData, title })  {
   return (
     <Card className=' dark:bg-zinc-900 dark:border-zinc-800 shadow-none'>
         <h1 className="font-bold">{title}</h1>
@@ -54,4 +54,3 @@ const DoughnutCharts = ({ groupedData, title }) => {
   );
 };
 
-export default DoughnutCharts;

@@ -16,7 +16,7 @@ const DoughnutChart = ({ data2, label, title }) => {
                         label: label,
                         data: data2.map(item => item.count),
                         backgroundColor: [
-                            '#00ffff',
+                            '#00e1d2',
                             '#a855f7',
                             '#f59e0b',
                             '#f97316',

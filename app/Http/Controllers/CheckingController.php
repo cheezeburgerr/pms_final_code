@@ -15,11 +15,17 @@ class CheckingController extends Controller
     public function index()
     {
         $order = Order::with('production.printer', 'lineups')->whereHas('production', function ($query) {
-            $query->where('status', 'Printing');
+            $query->whereIn('status', ['Printing', 'Sewing']);
         })->get();
 
-        $all = Order::with('production.printer', 'lineups')->whereHas('production', function ($query) {
-            $query->whereNotIn('status', ['Pending']);})->get();
+        $all = Order::with('production.printer', 'lineups')
+    ->whereHas('production', function ($query) {
+        $query->whereNotIn('status', ['Pending', 'Designing']);
+    })
+    ->whereHas('lineups', function ($query) {
+        $query->whereIn('note', ['Replacement', 'Reprint']);
+    })
+    ->get();
 
         return Inertia::render('Employee/Checking', ['order' => $order, 'allOrders' => $all]);
     }

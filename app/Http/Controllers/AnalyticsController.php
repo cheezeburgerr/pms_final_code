@@ -16,51 +16,110 @@ class AnalyticsController extends Controller
 {
     //
 
-    public function sales()
-    {
-        $ordersCount = ProductionDetails::whereNotIn('status', ['Cancelled', 'Pending', 'Released'])->count();
-        $earnings = Order::sum('total_price');
-        $lineups = Lineup::count();
-        $productCounts = Lineup::with('products')
-    ->selectRaw('product_id, COUNT(*) as count, SUM(price) as total_price')
-    ->join('products', 'lineups.product_id', '=', 'products.id') // Adjust this join based on your actual relationship
-    ->groupBy('product_id')
-    ->orderBy('count', 'desc')
-    ->get();
-        $orders = Order::with('production', 'employees.employee', 'products.products')
+    public function sales(Request $request)
+{
+    // Get filter from request, default to 'daily'
+    $filter = $request->query('filter', 'daily');
+    $today = now();
+    
+    // Define the date range based on the filter
+    switch ($filter) {
+        case 'weekly':
+            $startDate = $today->copy()->startOfWeek();
+            $endDate = $today->copy()->endOfWeek();
+            break;
+        case 'monthly':
+            $startDate = $today->copy()->startOfMonth();
+            $endDate = $today->copy()->endOfMonth();
+            break;
+        case 'yearly':
+            $startDate = $today->copy()->startOfYear();
+            $endDate = $today->copy()->endOfYear();
+            break;
+        default: // 'daily' case
+            $startDate = $today->copy()->startOfDay();
+            $endDate = $today->copy()->endOfDay();
+            break;
+    }
+
+    // Apply date filters to the queries
+
+    // Count orders, excluding 'Cancelled', 'Pending', and 'Released' statuses, within the date range
+    $ordersCount = ProductionDetails::whereNotIn('status', ['Cancelled', 'Pending', 'Released'])
+        ->whereBetween('created_at', [$startDate, $endDate]) // Filter by date range
+        ->count();
+
+    // Sum of earnings (total price of orders), filtered by date range
+    $earnings = Order::whereBetween('created_at', [$startDate, $endDate])->sum('total_price');
+
+    // Count of lineups, filtered by date range
+    $lineups = Lineup::whereBetween('created_at', [$startDate, $endDate])->count();
+
+    // Product counts and total price grouped by product_id
+    $productCounts = Lineup::with('products')
+        ->selectRaw('product_id, COUNT(*) as count, SUM(price) as total_price')
+        ->join('products', 'lineups.product_id', '=', 'products.id')
+        ->whereBetween('lineups.created_at', [$startDate, $endDate]) // Filter by date range
+        ->groupBy('product_id')
+        ->orderBy('count', 'desc')
+        ->get();
+
+    // Orders with associated data, filtered by date range
+    $orders = Order::with('production', 'employees.employee', 'products.products')
         ->withCount('products', 'lineups')
         ->whereHas('production', function ($query) {
             $query->where('status', '!=', 'Pending');
-        })->get();
-        $variations = OrderVariation::selectRaw('variation_id, COUNT(variation_id) as count')->groupBy('variation_id')->get();
+        })
+        ->whereBetween('orders.created_at', [$startDate, $endDate]) // Filter by date range
+        ->get();
 
+    // Variations count, filtered by date range
+    $variations = OrderVariation::selectRaw('variation_id, COUNT(variation_id) as count')
+        ->whereBetween('created_at', [$startDate, $endDate]) // Filter by date range
+        ->groupBy('variation_id')
+        ->get();
 
-        $results = OrderVariation::with(['category', 'variations'])
-            ->selectRaw('variation_id, category_id, COUNT(variation_id) as count')
-            ->groupBy('variation_id', 'category_id')
-            ->get();
+    // Grouping variations by category and variation name
+    $results = OrderVariation::with(['category', 'variations'])
+        ->selectRaw('variation_id, category_id, COUNT(variation_id) as count')
+        ->whereBetween('created_at', [$startDate, $endDate]) // Filter by date range
+        ->groupBy('variation_id', 'category_id')
+        ->get();
 
-        $arrayResults = $results->toArray();
+    // Convert to array for further processing
+    $arrayResults = $results->toArray();
 
-        $groupedByCategoryName = collect($arrayResults)->groupBy(function ($item) {
-            return $item['category']['category_name'];
-        });
+    // Group by category name
+    $groupedByCategoryName = collect($arrayResults)->groupBy(function ($item) {
+        return $item['category']['category_name'];
+    });
 
-        $groupedByCategoryAndVariation = $groupedByCategoryName->map(function ($items) {
-            return $items
-                ->groupBy(function ($item) {
-                    return $item['variations']['variation_name'];
-                })
-                ->map(function ($variationItems) {
-                    $totalCount = $variationItems->sum('count');
-                    return ['count' => $totalCount];
-                });
-        });
+    // Group by category and variation name, then sum the counts
+    $groupedByCategoryAndVariation = $groupedByCategoryName->map(function ($items) {
+        return $items
+            ->groupBy(function ($item) {
+                return $item['variations']['variation_name'];
+            })
+            ->map(function ($variationItems) {
+                $totalCount = $variationItems->sum('count');
+                return ['count' => $totalCount];
+            });
+    });
 
-        $arrayGroupedByCategoryAndVariation = $groupedByCategoryAndVariation->toArray();
+    // Convert final grouped data to array
+    $arrayGroupedByCategoryAndVariation = $groupedByCategoryAndVariation->toArray();
 
-        return response()->json(['sales' => $ordersCount, 'orders' => $orders, 'earnings' => $earnings, 'products' => $productCounts, 'lineups' => $lineups, 'variations' => $arrayGroupedByCategoryAndVariation]);
-    }
+    // Return the response with all the calculated data
+    return response()->json([
+        'sales' => $ordersCount,
+        'orders' => $orders,
+        'earnings' => $earnings,
+        'products' => $productCounts,
+        'lineups' => $lineups,
+        'variations' => $arrayGroupedByCategoryAndVariation
+    ]);
+}
+
 
     public function production_chart() {
         return Inertia::render('ProductionChart');
@@ -70,6 +129,7 @@ class AnalyticsController extends Controller
 {
     // Fetch errors with status 'Error'
     $errors = Lineup::where('status', 'Error')->get();
+    $priority = ProductionDetails::with('order')->where('priority', 'Yes')->get();
     
     // Group by status and count the number of occurrences
     $status = ProductionDetails::select('status', DB::raw('COUNT(*) as count'))
@@ -82,13 +142,15 @@ class AnalyticsController extends Controller
             $query->where('status', '!=', 'Pending');
         })->get();
     // Fetch all equipment
-    $equipment = Equipment::all();
+    $equipment = Equipment::with('orders.order.lineups')->get();
     
     // Return status grouped and counted
     return response()->json([
         'status' => $status,
         'orders' => $orders,
-        'equipment' => $equipment
+        'equipment' => $equipment,
+        'errors' => $errors,
+        'priority' => $priority
     ]);
 }
 

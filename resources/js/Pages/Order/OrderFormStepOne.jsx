@@ -1,11 +1,14 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import TextInput from '@/Components/TextInput';
 import PrimaryButton from '@/Components/PrimaryButton';
 import { IconUpload, IconX } from '@tabler/icons-react';
 import InputLabel from '@/Components/InputLabel';
 import { Button } from '@radix-ui/themes';
+import { Card } from 'flowbite-react';
+import InputError from '@/Components/InputError';
 
-export default function OrderFormStepOne({ data, setData, nextStep, product_id, image }) {
+export default function OrderFormStepOne({ data, setData, nextStep, product_id, image, selDesign, errors }) {
+    const [minDate, setMinDate] = useState('');
     const fileInputRef = useRef(null);
     const [uploadedFiles, setUploadedFiles] = useState([]);
 
@@ -39,9 +42,35 @@ export default function OrderFormStepOne({ data, setData, nextStep, product_id, 
         e.preventDefault();
         nextStep();
     };
+    useEffect(() => {
+        // Get the current date and add 3 days
+        const today = new Date();
+        today.setDate(today.getDate() + 3);
+        
+        // Format date as yyyy-mm-dd
+        const formattedDate = today.toISOString().split('T')[0];
+        
+        // Set the minDate state
+        setMinDate(formattedDate);
+    }, []);
 
+
+    // console.log(selDesign)
     return (
         <form onSubmit={handleSubmit} className="w-full flex flex-col items-center">
+            <div>
+                {image && (
+                    <div className="relative">
+                        <div className='w-full p-3 rounded-lg bg-gray-50 dark:bg-zinc-900 border dark:border-zinc-800 shadow-lg flex gap-4 justify-between'>
+                        <img src={`/storage/${image.image}`} alt="" className='h-16' />
+                        <div className='w-full'>
+                            <h1 className='font-bold'>{image.name}</h1>
+                            <h1 className='text-aqua'>{image.product.product_price.toFixed(2)}</h1>
+                        </div>
+                    </div>
+                    </div>
+                )}
+            </div>
             <div className="mt-4 items-center w-full md:w-1/2">
                 <h1 className="mb-4 text-center">Please fill up the details.</h1>
                 <div className="mb-4 w-full">
@@ -53,11 +82,14 @@ export default function OrderFormStepOne({ data, setData, nextStep, product_id, 
                         placeholder="Name"
                         value={data.team_name}
                         onChange={handleChange}
-                        className='w-full'
+                        required
+                        
+                        className='w-full mb-2'
                     />
+                    {errors.team_name && <InputError message={errors.team_name}/>}
                 </div>
                 <div className="mb-4 w-full">
-                <InputLabel for='team_name'>Due Date</InputLabel>
+                    <InputLabel for='team_name'>Due Date</InputLabel>
                     <TextInput
                         type="date"
                         name="due_date"
@@ -65,11 +97,13 @@ export default function OrderFormStepOne({ data, setData, nextStep, product_id, 
                         placeholder="Due Date"
                         value={data.due_date}
                         onChange={handleChange}
-                        className='w-full '
+                        min={minDate}
+                        className='w-full mb-2'
                     />
+                    {errors.due_date && <InputError message={errors.due_date}/>}
                 </div>
                 <div className="mb-4 w-full">
-                <InputLabel for='team_name'>Design</InputLabel>
+                    <InputLabel for='team_name'>Design</InputLabel>
                     <input
                         type="file"
                         name="files"
@@ -85,11 +119,11 @@ export default function OrderFormStepOne({ data, setData, nextStep, product_id, 
                         onClick={handleUploadButtonClick}
                         className="block w-full border border-zinc-300 dark:border-zinc-800 rounded-md p-4 text-center cursor-pointer bg-zinc-50 shadow-lg dark:bg-zinc-900"
                     >
-                       <div className="text-center flex justify-center flex-col items-center gap-4 opacity-50 border border-zinc-600 p-8 rounded-md">
-                       <IconUpload size={56}/>
+                        <div className="text-center flex justify-center flex-col items-center gap-4 opacity-50 border border-zinc-600 p-8 rounded-md">
+                            <IconUpload size={56} />
 
-                       Upload your design here.
-                       </div>
+                            Upload your design here.
+                        </div>
                     </div>
                 </div>
                 {/* Display uploaded image previews */}
@@ -102,14 +136,15 @@ export default function OrderFormStepOne({ data, setData, nextStep, product_id, 
                                 onClick={() => handleRemoveFile(index)}
                                 className="absolute -top-3 -right-3 p-1 bg-zinc-500 text-white rounded-full text-xs hover:bg-red-600 focus:outline-none"
                             >
-                                <IconX size={16}/>
+                                <IconX size={16} />
                             </button>
                         </div>
                     ))}
                 </div>
+
                 <div>
-                    {image && (
-                        <img src={`/storage/${image.image}`} alt="" />
+                    {selDesign && (
+                        <img src={selDesign} alt="" className='rounded-lg' />
                     )}
                 </div>
             </div>

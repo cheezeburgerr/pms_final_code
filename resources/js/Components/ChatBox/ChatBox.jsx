@@ -106,15 +106,15 @@ export default function ChatBox({ user_id }) {
 
 // Extracted ChatContent component for cleaner code
 const ChatContent = ({ messages, handleSubmit, message, setMessage, file, setFile, scroll, user_id }) => (
-    <div className="p-4 dark:text-zinc-100">
-        <h1 className="font-bold text-xl">Chat Box</h1>
-        <div className="chat-box overflow-y-auto h-[calc(100vh-300px)] md:h-[500px] no-scrollbar">
+    <div className=" dark:text-zinc-200 border rounded-t-lg border-zinc-500/25 shadow-lg">
+        <div className="bg-aqua p-3 rounded-t-lg"><h1 className="font-bold text-xl text-zinc-800">Chat Box</h1></div>
+        <div className="p-4 chat-box overflow-y-auto h-[calc(100vh-300px)] md:h-[500px] no-scrollbar">
             {messages && messages.map((msg, index) => (
                 <Message key={msg.id} message={msg} user_id={user_id} previousMessage={messages[index - 1]} />
             ))}
             <span ref={scroll}></span>
         </div>
-        <form onSubmit={handleSubmit} className="flex gap-4 items-center">
+        <form onSubmit={handleSubmit} className="flex gap-4 items-center p-3">
             <TextInput
                 type="text"
                 value={message}

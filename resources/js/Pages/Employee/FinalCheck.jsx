@@ -8,7 +8,7 @@ import moment from 'moment';
 
 export default function FinalCheck({ auth, order }) {
     const [searchTerm, setSearchTerm] = useState("");
-    const [lineup, setLineup] = useState(order.lineups.filter(lineup => lineup.status != 'Error'));
+    const [lineup, setLineup] = useState(order.lineups.filter(lineup => lineup.note != 'Replacement'));
 
     const [uncheckedRecords, setUncheckedRecords] = useState([]);
     const [showModal, setShowModal] = useState(false);

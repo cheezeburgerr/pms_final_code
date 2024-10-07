@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import Checkbox from '@/Components/Checkbox';
 import PrimaryButton from '@/Components/PrimaryButton';
 import { Radio } from 'flowbite-react';
+import InputError from '@/Components/InputError';
+import InputLabel from '@/Components/InputLabel';
+import TextInput from '@/Components/TextInput';
 
-export default function OrderVariationsPage({ data, setData, selectedProducts, prevStep, products }) {
+export default function OrderVariationsPage({ data, setData, selectedProducts, prevStep, products, errors }) {
 
     data.products = data.products || [];
     data.prices = data.prices || {};
@@ -63,6 +66,7 @@ export default function OrderVariationsPage({ data, setData, selectedProducts, p
         <div>
             <h2 className='mb-6'>Select Variations</h2>
             <form>
+            {errors.variations && <InputError message={errors.variations}/>}
                 <div className='grid md:grid-cols-2 gap-6'>
                     {data.products.map(productId => {
                         const selectedProduct = products.find(product => product.id === productId.id);
@@ -80,18 +84,18 @@ export default function OrderVariationsPage({ data, setData, selectedProducts, p
 
                                             <div className="flex mb-2">
                                                 {category.variation.map(variation => (
-                                                    <div key={variation.id} className='w-full rounded-md border border-1 border-zinc-500 p-2'>
-                                                        <Radio
+                                                    <div key={variation.id} className=' flex gap-4 items-center justify-center  w-full rounded-md border border-1 border-zinc-500 p-4'>
+                                                        <TextInput
                                                             type="radio"
                                                             id={`variation-${variation.id}`}
                                                             name={category.id}
                                                             value={variation.id}
                                                             data-price={variation.variation_price}
-                                                            className='mr-1'
+                                                            className='mr-1 text-aqua'
                                                             checked={selectedVariations[category.id] === variation.id}
                                                             onChange={() => handleVariationSelect(category.id, variation.id, selectedProduct.id)}
                                                         />
-                                                        <label htmlFor={`variation-${variation.id}`} className='truncate text-xs'>{variation.variation_name}</label>
+                                                        <InputLabel htmlFor={`variation-${variation.id}`} className='truncate text-xs'>{variation.variation_name}</InputLabel>
                                                     </div>
                                                 ))}
                                             </div>
@@ -101,7 +105,7 @@ export default function OrderVariationsPage({ data, setData, selectedProducts, p
 
                                 <p>Total Price: Php {calculateProductPrice(selectedProduct, selectedVariations).toFixed(2)}</p>
 
-                                <p>Subtotal: Php {(selectedProduct.subtotal || 0).toFixed(2)}</p>
+                                {/* <p>Subtotal: Php {(selectedProduct.subtotal || 0).toFixed(2)}</p> */}
                             </div>
                         );
                     })}

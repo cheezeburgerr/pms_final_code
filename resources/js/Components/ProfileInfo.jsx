@@ -1,9 +1,10 @@
-import { usePage } from "@inertiajs/react";
+import { Link, usePage } from "@inertiajs/react";
 import { IconPencil } from "@tabler/icons-react";
-import { Link } from "lucide-react";
+
 
 export default function ProfileInfo({user}){
 
+    console.log(user)
 
     return(
         <>
@@ -16,7 +17,7 @@ export default function ProfileInfo({user}){
                             <div className='flex justify-center md:justify-start items-center gap-x-4 mb-8'>
                                 <h1 className="font-bold text-4xl">{user.name}</h1>
                                 <div className="flex space-x-2">
-                                    <Link href={route('profile.edit')}>
+                                    <Link href={route('edit.profile', user.id)}>
                                         <IconPencil color={'white'} />
                                     </Link>
                                 </div>

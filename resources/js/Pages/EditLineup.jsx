@@ -82,7 +82,7 @@ export default function EditLineup({ auth, lineup, order }) {
                         <h1 className="font-bold text-2xl">Edit Lineup</h1>
                         <SecondaryButton type="button" onClick={addRow}>Add Row</SecondaryButton>
                     </div>
-                    <div className="row scrollable card p-3">
+                    <div className="overflow-x-auto row scrollable card p-3">
                         <form onSubmit={handleSubmit}>
                             <table className="w-full text-sm text-left rtl:text-right text-zinc-500">
                                 <thead>
@@ -109,7 +109,7 @@ export default function EditLineup({ auth, lineup, order }) {
                                                     onChange={(e) => handleProductChange(index, e.target.value)}
                                                     required
                                                 >
-                                                    <option value="" disabled>Select Product</option>
+                                                    <option value="" disabled selected>Select Product</option>
                                                     {order.products.map(product => (
                                                         <option key={product.products[0].id} value={product.products[0].id}>{product.products[0].product_name}</option>
                                                     ))}
@@ -134,7 +134,7 @@ export default function EditLineup({ auth, lineup, order }) {
                                                     onChange={(e) => handleClassificationChange(index, e.target.value)}
                                                     required
                                                 >
-                                                    <option value="" disabled>Select Classification</option>
+                                                    <option value="" disabled selected>Select Classification</option>
                                                     <option value="Adult">Adult</option>
                                                     <option value="Kid">Kid</option>
                                                 </select>
@@ -151,7 +151,7 @@ export default function EditLineup({ auth, lineup, order }) {
                                                     }}
                                                     required
                                                 >
-                                                    <option value="" disabled>Select Gender</option>
+                                                    <option value="" disabled selected>Select Gender</option>
                                                     <option value="Male">Male</option>
                                                     <option value="Female">Female</option>
                                                 </select>
@@ -168,7 +168,7 @@ export default function EditLineup({ auth, lineup, order }) {
                                                     }}
                                                     required
                                                 >
-                                                    <option value="" disabled>Select Size</option>
+                                                    <option value="" disabled selected>Select Size</option>
                                                     <option value="XS">XS</option>
                                                     <option value="S">S</option>
                                                     <option value="M">M</option>
@@ -189,7 +189,7 @@ export default function EditLineup({ auth, lineup, order }) {
                                                     }}
                                                     required
                                                 >
-                                                    <option value="" disabled>Select Size</option>
+                                                    <option value="" disabled selected>Select Size</option>
                                                     <option value="XS">XS</option>
                                                     <option value="S">S</option>
                                                     <option value="M">M</option>

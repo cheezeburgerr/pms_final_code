@@ -18,4 +18,9 @@ class ProductionEmployee extends Model
     public function employee() {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function orders()
+    {
+        return $this->belongsTo(Order::class, 'order_id');
+    }
 }
